@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"github.com/fyuan1316/asm-operator/api/dep/crd"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,6 +40,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(crd.AddToScheme(scheme))
 
 	utilruntime.Must(operatorv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
