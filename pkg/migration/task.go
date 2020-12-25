@@ -14,6 +14,10 @@ import (
 type MigCrdTask struct {
 }
 
+func (m MigCrdTask) LiveNess() bool {
+	panic("implement me")
+}
+
 var ChangeCrdTask MigCrdTask
 
 func init() {
