@@ -1,268 +1,317 @@
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: canarydeliveries.asm.alauda.io
 spec:
+  conversion:
+    strategy: None
   group: asm.alauda.io
-  version: v1alpha1
-  versions:
-    - name: v1alpha1
-      served: true
-      storage: true
   names:
-    plural: canarydeliveries
-    singular: canarydelivery
-    kind: CanaryDelivery
     categories:
       - all
+    kind: CanaryDelivery
+    listKind: CanaryDeliveryList
+    plural: canarydeliveries
+    singular: canarydelivery
   scope: Namespaced
-  subresources:
-    status: {}
-  additionalPrinterColumns:
-    - name: Status
-      type: string
-      JSONPath: .status.phase
-    - name: Weight
-      type: string
-      JSONPath: .status.canaryWeight
-    - name: FailedChecks
-      type: string
-      JSONPath: .status.failedChecks
-      priority: 1
-    - name: Interval
-      type: string
-      JSONPath: .spec.analysis.interval
-      priority: 1
-    - name: Mirror
-      type: boolean
-      JSONPath: .spec.analysis.mirror
-      priority: 1
-    - name: StepWeight
-      type: string
-      JSONPath: .spec.analysis.stepWeight
-      priority: 1
-    - name: MaxWeight
-      type: string
-      JSONPath: .spec.analysis.maxWeight
-      priority: 1
-    - name: LastTransitionTime
-      type: string
-      JSONPath: .status.lastTransitionTime
-  validation:
-    openAPIV3Schema:
-      properties:
-        spec:
-          required:
-            - targetRef
-            - analysis
-            - metrics
-          properties:
-            targetRef:
-              description: Target selector
-              type: object
-              required: ["apiVersion", "kind", "name"]
-              properties:
-                apiVersion:
-                  type: string
-                kind:
-                  type: string
-                  enum:
-                    - DaemonSet
-                    - Deployment
-                    - Service
-                name:
-                  type: string
-            skipAnalysis:
-              description: Skip analysis and promote canary
-              type: boolean
-            analysis:
-              description: Canary analysis for this canary
-              type: object
-              oneOf:
-                - required: ["interval", "threshold", "iterations"]
-                - required: ["interval", "threshold", "stepWeight"]
-              properties:
-                interval:
-                  description: Schedule interval for this canary
-                  type: string
-                  pattern: "^[0-9]+(m|s)"
-                iterations:
-                  description: Number of checks to run for A/B Testing and Blue/Green
-                  type: integer
-                threshold:
-                  description: Max number of failed checks before rollback
-                  type: integer
-                maxWeight:
-                  description: Max traffic percentage routed to canary
-                  type: integer
-                stepWeight:
-                  description: Incremental traffic percentage step
-                  type: integer
-                mirror:
-                  description: Mirror traffic to canary
-                  type: boolean
-                match:
-                  description: A/B testing match conditions
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      headers:
-                        type: object
-                        additionalProperties:
-                          oneOf:
-                            - required: ["exact"]
-                            - required: ["prefix"]
-                            - required: ["suffix"]
-                            - required: ["regex"]
-                          type: object
-                          properties:
-                            exact:
-                              format: string
-                              type: string
-                            prefix:
-                              format: string
-                              type: string
-                            suffix:
-                              format: string
-                              type: string
-                            regex:
-                              format: string
-                              type: string
-            metrics:
-              description: Metric check list for this canary
-              type: array
-              items:
-                type: object
-                required: ["name"]
-                properties:
-                  name:
-                    description: Name of the metric
-                    type: string
-                  interval:
-                    description: Interval of the query
-                    type: string
-                    pattern: "^[0-9]+(m|s)"
-                  threshold:
-                    description: Max value accepted for this metric
-                    type: number
-                  thresholdRange:
-                    description: Range accepted for this metric
-                    type: object
-                    properties:
-                      min:
-                        description: Min value accepted for this metric
-                        type: number
-                      max:
-                        description: Max value accepted for this metric
-                        type: number
-            records:
-              description: records of canary deliveries
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    description: canary record id
-                    type: integer
-                  name:
-                    description: canary delivery workload name
-                    type: string
-                  namespace:
-                    description: canary delivery workload namespace
-                    type: string
-                  starttime:
-                    description: record starttime
-                    type: string
-                  endtime:
-                    description: record endtime
-                    type: string
-                  currentweight:
-                    description: record current Weight of new version
-                    type: integer
-                  status:
-                    description: record status
-                    type: string
-                  events:
-                    description: record events
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        eventname:
-                          description: event name
-                          type: string
-                        phase:
-                          description: event status
-                          type: string
-                        eventtype:
-                          description: event type
-                          type: string
-                        message:
-                          description: event message
-                          type: string
-                        timestamp:
-                          description: event timestamp
-                          type: string
-                        weight:
-                          description: weight
-                          type: integer
-        status:
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .status.phase
+          name: Status
+          type: string
+        - jsonPath: .status.canaryWeight
+          name: Weight
+          type: string
+        - jsonPath: .status.failedChecks
+          name: FailedChecks
+          priority: 1
+          type: string
+        - jsonPath: .spec.analysis.interval
+          name: Interval
+          priority: 1
+          type: string
+        - jsonPath: .spec.analysis.mirror
+          name: Mirror
+          priority: 1
+          type: boolean
+        - jsonPath: .spec.analysis.stepWeight
+          name: StepWeight
+          priority: 1
+          type: string
+        - jsonPath: .spec.analysis.maxWeight
+          name: MaxWeight
+          priority: 1
+          type: string
+        - jsonPath: .status.lastTransitionTime
+          name: LastTransitionTime
+          type: string
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
           type: object
           properties:
-            phase:
-              description: Analysis phase of this canary
-              type: string
-              enum:
-                - ""
-                - Initializing
-                - Initialized
-                - Waiting
-                - Progressing
-                - Promoting
-                - Finalising
-                - Succeeded
-                - Failed
-            canaryWeight:
-              description: Traffic weight percentage routed to canary
-              type: number
-            failedChecks:
-              description: Failed check count of the current canary analysis
-              type: number
-            iterations:
-              description: Iteration count of the current canary analysis
-              type: number
-            lastAppliedSpec:
-              description: LastAppliedSpec of this canary
-              type: string
-            lastTransitionTime:
-              description: LastTransitionTime of this canary
-              format: date-time
-              type: string
-            conditions:
-              description: Status conditions of this canary
-              type: array
-              items:
-                type: object
-                required: ["type", "status", "reason"]
-                properties:
-                  lastTransitionTime:
-                    description: LastTransitionTime of this condition
-                    format: date-time
-                    type: string
-                  lastUpdateTime:
-                    description: LastUpdateTime of this condition
-                    format: date-time
-                    type: string
-                  message:
-                    description: Message associated with this condition
-                    type: string
-                  reason:
-                    description: Reason for the current status of this condition
-                    type: string
-                  status:
-                    description: Status of this condition
-                    type: string
-                  type:
-                    description: Type of this condition
-                    type: string
+            spec:
+              type: object
+              properties:
+                analysis:
+                  description: Canary analysis for this canary
+                  oneOf:
+                    - required:
+                        - interval
+                        - threshold
+                        - iterations
+                    - required:
+                        - interval
+                        - threshold
+                        - stepWeight
+                  properties:
+                    interval:
+                      description: Schedule interval for this canary
+                      pattern: ^[0-9]+(m|s)
+                      type: string
+                    iterations:
+                      description: Number of checks to run for A/B Testing and Blue/Green
+                      type: integer
+                    match:
+                      description: A/B testing match conditions
+                      items:
+                        properties:
+                          headers:
+                            additionalProperties:
+                              oneOf:
+                                - required:
+                                    - exact
+                                - required:
+                                    - prefix
+                                - required:
+                                    - suffix
+                                - required:
+                                    - regex
+                              properties:
+                                exact:
+                                  format: string
+                                  type: string
+                                prefix:
+                                  format: string
+                                  type: string
+                                regex:
+                                  format: string
+                                  type: string
+                                suffix:
+                                  format: string
+                                  type: string
+                              type: object
+                            type: object
+                        type: object
+                      type: array
+                    maxWeight:
+                      description: Max traffic percentage routed to canary
+                      type: integer
+                    mirror:
+                      description: Mirror traffic to canary
+                      type: boolean
+                    stepWeight:
+                      description: Incremental traffic percentage step
+                      type: integer
+                    threshold:
+                      description: Max number of failed checks before rollback
+                      type: integer
+                  type: object
+                metrics:
+                  description: Metric check list for this canary
+                  items:
+                    properties:
+                      interval:
+                        description: Interval of the query
+                        pattern: ^[0-9]+(m|s)
+                        type: string
+                      name:
+                        description: Name of the metric
+                        type: string
+                      threshold:
+                        description: Max value accepted for this metric
+                        type: number
+                      thresholdRange:
+                        description: Range accepted for this metric
+                        properties:
+                          max:
+                            description: Max value accepted for this metric
+                            type: number
+                          min:
+                            description: Min value accepted for this metric
+                            type: number
+                        type: object
+                    required:
+                      - name
+                    type: object
+                  type: array
+                records:
+                  description: records of canary deliveries
+                  items:
+                    properties:
+                      currentweight:
+                        description: record current Weight of new version
+                        type: integer
+                      endtime:
+                        description: record endtime
+                        type: string
+                      events:
+                        description: record events
+                        items:
+                          properties:
+                            eventname:
+                              description: event name
+                              type: string
+                            eventtype:
+                              description: event type
+                              type: string
+                            message:
+                              description: event message
+                              type: string
+                            phase:
+                              description: event status
+                              type: string
+                            timestamp:
+                              description: event timestamp
+                              type: string
+                            weight:
+                              description: weight
+                              type: integer
+                          type: object
+                        type: array
+                      id:
+                        description: canary record id
+                        type: integer
+                      name:
+                        description: canary delivery workload name
+                        type: string
+                      namespace:
+                        description: canary delivery workload namespace
+                        type: string
+                      starttime:
+                        description: record starttime
+                        type: string
+                      status:
+                        description: record status
+                        type: string
+                    type: object
+                  type: array
+                skipAnalysis:
+                  description: Skip analysis and promote canary
+                  type: boolean
+                targetRef:
+                  description: Target selector
+                  properties:
+                    apiVersion:
+                      type: string
+                    kind:
+                      enum:
+                        - DaemonSet
+                        - Deployment
+                        - Service
+                      type: string
+                    name:
+                      type: string
+                  required:
+                    - apiVersion
+                    - kind
+                    - name
+                  type: object
+              required:
+                - targetRef
+                - analysis
+                - metrics
+            status:
+              properties:
+                canaryWeight:
+                  description: Traffic weight percentage routed to canary
+                  type: number
+                conditions:
+                  description: Status conditions of this canary
+                  items:
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime of this condition
+                        format: date-time
+                        type: string
+                      lastUpdateTime:
+                        description: LastUpdateTime of this condition
+                        format: date-time
+                        type: string
+                      message:
+                        description: Message associated with this condition
+                        type: string
+                      reason:
+                        description: Reason for the current status of this condition
+                        type: string
+                      status:
+                        description: Status of this condition
+                        type: string
+                      type:
+                        description: Type of this condition
+                        type: string
+                    required:
+                      - type
+                      - status
+                      - reason
+                    type: object
+                  type: array
+                failedChecks:
+                  description: Failed check count of the current canary analysis
+                  type: number
+                iterations:
+                  description: Iteration count of the current canary analysis
+                  type: number
+                lastAppliedSpec:
+                  description: LastAppliedSpec of this canary
+                  type: string
+                lastTransitionTime:
+                  description: LastTransitionTime of this canary
+                  format: date-time
+                  type: string
+                phase:
+                  description: Analysis phase of this canary
+                  enum:
+                    - ""
+                    - Initializing
+                    - Initialized
+                    - Waiting
+                    - Progressing
+                    - Promoting
+                    - Finalising
+                    - Succeeded
+                    - Failed
+                  type: string
+              type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+status:
+  acceptedNames:
+    categories:
+      - all
+    kind: CanaryDelivery
+    listKind: CanaryDeliveryList
+    plural: canarydeliveries
+    singular: canarydelivery
+  conditions:
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: '[spec.validation.openAPIV3Schema.properties[spec].type: Required value:
+      must not be empty for specified object fields, spec.validation.openAPIV3Schema.type:
+      Required value: must not be empty at the root]'
+      reason: Violations
+      status: "True"
+      type: NonStructuralSchema
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: no conflicts found
+      reason: NoConflicts
+      status: "True"
+      type: NamesAccepted
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: the initial names have been accepted
+      reason: InitialNamesAccepted
+      status: "True"
+      type: Established
+  storedVersions:
+    - v1alpha1

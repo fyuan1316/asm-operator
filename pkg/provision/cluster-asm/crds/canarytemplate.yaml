@@ -1,177 +1,224 @@
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: canarytemplates.asm.alauda.io
 spec:
+  conversion:
+    strategy: None
   group: asm.alauda.io
-  version: v1alpha1
-  versions:
-    - name: v1alpha1
-      served: true
-      storage: true
   names:
-    plural: canarytemplates
-    singular: canarytemplate
-    kind: CanaryTemplate
     categories:
       - all
+    kind: CanaryTemplate
+    listKind: CanaryTemplateList
+    plural: canarytemplates
+    singular: canarytemplate
+
   scope: Namespaced
-  subresources:
-    status: {}
-  additionalPrinterColumns:
-    - name: Interval
-      type: string
-      JSONPath: .spec.analysis.interval
-      priority: 1
-    - name: Mirror
-      type: boolean
-      JSONPath: .spec.analysis.mirror
-      priority: 1
-    - name: StepWeight
-      type: string
-      JSONPath: .spec.analysis.stepWeight
-      priority: 1
-    - name: MaxWeight
-      type: string
-      JSONPath: .spec.analysis.maxWeight
-      priority: 1
-  validation:
-    openAPIV3Schema:
-      properties:
-        spec:
-          required:
-            - analysis
+  versions:
+    - additionalPrinterColumns:
+        - jsonPath: .spec.analysis.interval
+          name: Interval
+          priority: 1
+          type: string
+        - jsonPath: .spec.analysis.mirror
+          name: Mirror
+          priority: 1
+          type: boolean
+        - jsonPath: .spec.analysis.stepWeight
+          name: StepWeight
+          priority: 1
+          type: string
+        - jsonPath: .spec.analysis.maxWeight
+          name: MaxWeight
+          priority: 1
+          type: string
+      name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          type: object
           properties:
-            skipAnalysis:
-              description: Skip analysis and promote canary
-              type: boolean
-            analysis:
-              description: Canary analysis for this canary
+            spec:
               type: object
-              oneOf:
-                - required: ["interval", "threshold", "iterations"]
-                - required: ["interval", "threshold", "stepWeight"]
               properties:
-                interval:
-                  description: Schedule interval for this canary
-                  type: string
-                  pattern: "^[0-9]+(m|s)"
-                iterations:
-                  description: Number of checks to run for A/B Testing and Blue/Green
-                  type: integer
-                threshold:
-                  description: Max number of failed checks before rollback
-                  type: integer
-                maxWeight:
-                  description: Max traffic percentage routed to canary
-                  type: integer
-                stepWeight:
-                  description: Incremental traffic percentage step
-                  type: integer
-                mirror:
-                  description: Mirror traffic to canary
-                  type: boolean
-                match:
-                  description: A/B testing match conditions
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      headers:
-                        type: object
-                        additionalProperties:
-                          oneOf:
-                            - required: ["exact"]
-                            - required: ["prefix"]
-                            - required: ["suffix"]
-                            - required: ["regex"]
-                          type: object
-                          properties:
-                            exact:
-                              format: string
-                              type: string
-                            prefix:
-                              format: string
-                              type: string
-                            suffix:
-                              format: string
-                              type: string
-                            regex:
-                              format: string
-                              type: string
-                metrics:
-                  description: Metric check list for this canary
-                  type: array
-                  items:
-                    type: object
-                    required: ["name"]
-                    properties:
-                      name:
-                        description: Name of the metric
-                        type: string
-                      interval:
-                        description: Interval of the query
-                        type: string
-                        pattern: "^[0-9]+(m|s)"
-                      threshold:
-                        description: Max value accepted for this metric
-                        type: number
-                      thresholdRange:
-                        description: Range accepted for this metric
-                        type: object
+                analysis:
+                  description: Canary analysis for this canary
+                  oneOf:
+                    - required:
+                        - interval
+                        - threshold
+                        - iterations
+                    - required:
+                        - interval
+                        - threshold
+                        - stepWeight
+                  properties:
+                    interval:
+                      description: Schedule interval for this canary
+                      pattern: ^[0-9]+(m|s)
+                      type: string
+                    iterations:
+                      description: Number of checks to run for A/B Testing and Blue/Green
+                      type: integer
+                    match:
+                      description: A/B testing match conditions
+                      items:
                         properties:
-                          min:
-                            description: Min value accepted for this metric
-                            type: number
-                          max:
+                          headers:
+                            additionalProperties:
+                              oneOf:
+                                - required:
+                                    - exact
+                                - required:
+                                    - prefix
+                                - required:
+                                    - suffix
+                                - required:
+                                    - regex
+                              properties:
+                                exact:
+                                  format: string
+                                  type: string
+                                prefix:
+                                  format: string
+                                  type: string
+                                regex:
+                                  format: string
+                                  type: string
+                                suffix:
+                                  format: string
+                                  type: string
+                              type: object
+                            type: object
+                        type: object
+                      type: array
+                    maxWeight:
+                      description: Max traffic percentage routed to canary
+                      type: integer
+                    metrics:
+                      description: Metric check list for this canary
+                      items:
+                        properties:
+                          interval:
+                            description: Interval of the query
+                            pattern: ^[0-9]+(m|s)
+                            type: string
+                          name:
+                            description: Name of the metric
+                            type: string
+                          query:
+                            description: Prometheus query
+                            type: string
+                          templateRef:
+                            description: Metric template reference
+                            properties:
+                              name:
+                                description: Name of this metric template
+                                type: string
+                              namespace:
+                                description: Namespace of this metric template
+                                type: string
+                            required:
+                              - name
+                            type: object
+                          threshold:
                             description: Max value accepted for this metric
                             type: number
-                      query:
-                        description: Prometheus query
-                        type: string
-                      templateRef:
-                        description: Metric template reference
+                          thresholdRange:
+                            description: Range accepted for this metric
+                            properties:
+                              max:
+                                description: Max value accepted for this metric
+                                type: number
+                              min:
+                                description: Min value accepted for this metric
+                                type: number
+                            type: object
+                        required:
+                          - name
                         type: object
-                        required: ["name"]
+                      type: array
+                    mirror:
+                      description: Mirror traffic to canary
+                      type: boolean
+                    stepWeight:
+                      description: Incremental traffic percentage step
+                      type: integer
+                    threshold:
+                      description: Max number of failed checks before rollback
+                      type: integer
+                    webhooks:
+                      description: Webhook list for this canary
+                      items:
                         properties:
+                          metadata:
+                            additionalProperties:
+                              type: string
+                            description: Metadata (key-value pairs) for this webhook
+                            type: object
                           name:
-                            description: Name of this metric template
+                            description: Name of the webhook
                             type: string
-                          namespace:
-                            description: Namespace of this metric template
+                          timeout:
+                            description: Request timeout for this webhook
+                            pattern: ^[0-9]+(m|s)
                             type: string
-                webhooks:
-                  description: Webhook list for this canary
-                  type: array
-                  items:
-                    type: object
-                    required: ["name", "url"]
-                    properties:
-                      name:
-                        description: Name of the webhook
-                        type: string
-                      type:
-                        description: Type of the webhook pre, post or during rollout
-                        type: string
-                        enum:
-                          - ""
-                          - confirm-rollout
-                          - pre-rollout
-                          - rollout
-                          - confirm-promotion
-                          - post-rollout
-                          - event
-                          - rollback
-                      url:
-                        description: URL address of this webhook
-                        type: string
-                        format: url
-                      timeout:
-                        description: Request timeout for this webhook
-                        type: string
-                        pattern: "^[0-9]+(m|s)"
-                      metadata:
-                        description: Metadata (key-value pairs) for this webhook
+                          type:
+                            description: Type of the webhook pre, post or during rollout
+                            enum:
+                              - ""
+                              - confirm-rollout
+                              - pre-rollout
+                              - rollout
+                              - confirm-promotion
+                              - post-rollout
+                              - event
+                              - rollback
+                            type: string
+                          url:
+                            description: URL address of this webhook
+                            format: url
+                            type: string
+                        required:
+                          - name
+                          - url
                         type: object
-                        additionalProperties:
-                          type: string
+                      type: array
+                  type: object
+                skipAnalysis:
+                  description: Skip analysis and promote canary
+                  type: boolean
+              required:
+                - analysis
+      served: true
+      storage: true
+      subresources:
+        status: {}
+status:
+  acceptedNames:
+    categories:
+      - all
+    kind: CanaryTemplate
+    listKind: CanaryTemplateList
+    plural: canarytemplates
+    singular: canarytemplate
+  conditions:
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: '[spec.validation.openAPIV3Schema.properties[spec].type: Required value:
+      must not be empty for specified object fields, spec.validation.openAPIV3Schema.type:
+      Required value: must not be empty at the root]'
+      reason: Violations
+      status: "True"
+      type: NonStructuralSchema
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: no conflicts found
+      reason: NoConflicts
+      status: "True"
+      type: NamesAccepted
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: the initial names have been accepted
+      reason: InitialNamesAccepted
+      status: "True"
+      type: Established
+  storedVersions:
+    - v1alpha1

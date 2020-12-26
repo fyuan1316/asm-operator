@@ -1,80 +1,107 @@
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     controller-tools.k8s.io: "1.0"
   name: connectionpools.asm.alauda.io
 spec:
+  conversion:
+    strategy: None
   group: asm.alauda.io
   names:
     kind: ConnectionPool
+    listKind: ConnectionPoolList
     plural: connectionpools
-    singular: connectionpool
     shortNames:
       - cp
+    singular: connectionpool
   scope: Namespaced
-  validation:
-    openAPIV3Schema:
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
-          type: string
-        metadata:
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
           type: object
-        spec:
           properties:
-            host:
-              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                Important: Run "make" to regenerate code after modifying this file'
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
               type: string
-            http:
-              properties:
-                httpMaxPendingRequests:
-                  description: Maximum number of pending HTTP1 requests to a destination.
-                    Default 1024.
-                  format: int32
-                  type: integer
-                httpMaxRequests:
-                  description: Maximum number of HTTP2 requests to a backend. Default
-                    1024.
-                  format: int32
-                  type: integer
-                maxRequestsPerConnection:
-                  description: parameter 1 disables keep alive. Default 0, meaning
-                    "unlimited",
-                  format: int32
-                  type: integer
-                maxRetries:
-                  description: cluster at a given time. Defaults to 3.
-                  format: int32
-                  type: integer
+            kind:
+              description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+              type: string
+            metadata:
               type: object
-            tcp:
+            spec:
               properties:
-                connectTimeout:
-                  description: TCP connection timeout.
+                host:
+                  description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "make" to regenerate code after modifying this file'
                   type: string
-                maxConnections:
-                  description: Maximum number of HTTP1 /TCP connections to a destination
-                    host. Default 1024.
-                  format: int32
-                  type: integer
+                http:
+                  properties:
+                    httpMaxPendingRequests:
+                      description: Maximum number of pending HTTP1 requests to a destination.
+                        Default 1024.
+                      format: int32
+                      type: integer
+                    httpMaxRequests:
+                      description: Maximum number of HTTP2 requests to a backend. Default
+                        1024.
+                      format: int32
+                      type: integer
+                    maxRequestsPerConnection:
+                      description: parameter 1 disables keep alive. Default 0, meaning
+                        "unlimited",
+                      format: int32
+                      type: integer
+                    maxRetries:
+                      description: cluster at a given time. Defaults to 3.
+                      format: int32
+                      type: integer
+                  type: object
+                tcp:
+                  properties:
+                    connectTimeout:
+                      description: TCP connection timeout.
+                      type: string
+                    maxConnections:
+                      description: Maximum number of HTTP1 /TCP connections to a destination
+                        host. Default 1024.
+                      format: int32
+                      type: integer
+                  type: object
               type: object
-          type: object
-        status:
-          type: object
-  version: v1alpha1
+            status:
+              type: object
+      served: true
+      storage: true
 status:
   acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
+    kind: ConnectionPool
+    listKind: ConnectionPoolList
+    plural: connectionpools
+    shortNames:
+      - cp
+    singular: connectionpool
+  conditions:
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: 'spec.validation.openAPIV3Schema.type: Required value: must not be empty
+      at the root'
+      reason: Violations
+      status: "True"
+      type: NonStructuralSchema
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: no conflicts found
+      reason: NoConflicts
+      status: "True"
+      type: NamesAccepted
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: the initial names have been accepted
+      reason: InitialNamesAccepted
+      status: "True"
+      type: Established
+  storedVersions:
+    - v1alpha1
