@@ -48,8 +48,8 @@ var tasks [][]manage.ExecuteItem
 
 func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
-	_ = r.Log.WithValues("asm", req.NamespacedName)
-
+	log := r.Log.WithValues("asm", req.NamespacedName)
+	_ = log
 	// your logic here
 	instance := &operatorv1alpha1.Asm{}
 	err := r.Get(context.TODO(), req.NamespacedName, instance)
@@ -68,6 +68,10 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		tasks = task.GetDeployStages()
 	})
 	err = mgr.Reconcile(tasks)
+	if err != nil {
+		log.Error(err, "Reconcile err")
+	}
+
 	return ctrl.Result{}, nil
 }
 

@@ -1,0 +1,39 @@
+apiVersion: asm.alauda.io/v1alpha1
+kind: CanaryTemplate
+metadata:
+  name: generalcanary
+  namespace: {{ .Values.istio.namespace }}
+  labels:
+    heritage: {{ $.Release.Service }}
+    release: {{ $.Release.Name }}
+spec:
+  analysis:
+    # schedule interval (default 60s)
+    interval: 30s
+    # max number of failed metric checks before rollback
+    threshold: 5
+    # max traffic percentage routed to canary
+    # percentage (0-100)
+    maxWeight: 100
+    # canary increment step
+    # percentage (0-100)
+    stepWeight: 20
+    metrics:
+    - name: request-success-rate
+      # minimum req success rate (non 5xx responses)
+      # percentage (0-100)
+      thresholdRange:
+        min: 99
+      interval: 1m
+    - name: request-duration
+      # maximum req duration P99
+      # milliseconds
+      thresholdRange:
+        max: 500
+      interval: 30s
+    # testing (optional)
+    webhooks:
+      - name: "send event"
+        type: event
+        timeout: 10s
+        url: http://asm-controller.{{ .Release.Namespace }}:8099/event

@@ -31,11 +31,18 @@ type AsmSpec struct {
 	// Foo is an example field of Asm. Edit Asm_types.go to remove/update
 	Foo string `json:"foo,omitempty"`
 }
+type AsmState string
+
+var AsmStates = struct {
+	Health   AsmState
+	UnHealth AsmState
+}{"Health", "UnHealth"}
 
 // AsmStatus defines the observed state of Asm
 type AsmStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	State AsmState `json:"state,omitempty"`
 }
 
 // +kubebuilder:object:root=true

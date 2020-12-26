@@ -1,15 +1,12 @@
 package mock
 
 import (
-	"context"
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/sync"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -59,65 +56,46 @@ spec:
 `
 
 func init() {
-	deployTask = DeployTask{}
+	deployTask = DeployTask{
+
+	}
 	res := resource.SyncResource{
 		Object: &appsv1.Deployment{},
-		Sync: func(client client.Client, object manage.Object) error {
-			deploy := appsv1.Deployment{}
-			err := client.Get(context.Background(),
-				types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
-				&deploy,
-			)
-			if err != nil {
-				if errors.IsNotFound(err) {
-					errCreate := client.Create(context.Background(), object)
-					if errCreate != nil {
-						return errCreate
-					}
-				}
-				return err
-			} else {
-				//update
-				wanted := object.(*appsv1.Deployment)
-				if !equality.Semantic.DeepDerivative(deploy.Spec, wanted.Spec) {
-					deploy.Spec = wanted.Spec
-					if errUpd := client.Update(context.Background(), &deploy); errUpd != nil {
-						return errUpd
-					}
-				}
-			}
-			return nil
-		},
+		Sync:   sync.FnDeployment,
+		//Sync: func(client client.Client, object manage.Object) error {
+		//	deploy := appsv1.Deployment{}
+		//	err := client.Get(context.Background(),
+		//		types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
+		//		&deploy,
+		//	)
+		//	if err != nil {
+		//		if errors.IsNotFound(err) {
+		//			errCreate := client.Create(context.Background(), object)
+		//			if errCreate != nil {
+		//				return errCreate
+		//			}
+		//		}
+		//		return err
+		//	} else {
+		//		//update
+		//		wanted := object.(*appsv1.Deployment)
+		//		if !equality.Semantic.DeepDerivative(wanted.Spec, deploy.Spec) {
+		//			deploy.Spec = wanted.Spec
+		//			if errUpd := client.Update(context.Background(), &deploy); errUpd != nil {
+		//				return errUpd
+		//			}
+		//		}
+		//	}
+		//	return nil
+		//},
 	}
+	res.SetOwnerRef()
+
 	resSvc := resource.SyncResource{
 		Object: &corev1.Service{},
-		Sync: func(client client.Client, object manage.Object) error {
-			deploy := corev1.Service{}
-			err := client.Get(context.Background(),
-				types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
-				&deploy,
-			)
-			if err != nil {
-				if errors.IsNotFound(err) {
-					errCreate := client.Create(context.Background(), object)
-					if errCreate != nil {
-						return errCreate
-					}
-				}
-				return err
-			} else {
-				//update
-				wanted := object.(*corev1.Service)
-				if !equality.Semantic.DeepDerivative(deploy.Spec, wanted.Spec) {
-					deploy.Spec = wanted.Spec
-					if errUpd := client.Update(context.Background(), &deploy); errUpd != nil {
-						return errUpd
-					}
-				}
-			}
-			return nil
-		},
+		Sync:   sync.FnService,
 	}
+	resSvc.SetOwnerRef()
 	err := deployTask.Load(deploy1, res)
 	if err != nil {
 		panic(err)
@@ -154,4 +132,8 @@ func (m DeployTask) Run(om *manage.OperatorManage) error {
 	fmt.Println("DeployTask Run")
 	err := m.Sync(om)
 	return err
+}
+
+func (m DeployTask) LiveNess() bool {
+	return true
 }

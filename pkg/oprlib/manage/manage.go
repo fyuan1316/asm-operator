@@ -32,59 +32,79 @@ func (m *OperatorManage) Reconcile(stages [][]ExecuteItem) error {
 	//
 	//}
 	//sync
-	return m.ProcessStages(stages)
+	if err := m.ProcessStages(stages); err != nil {
+		return err
+	}
+	if err := m.HealthCheck(stages); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (m *OperatorManage) HealthCheck(stages [][]ExecuteItem) error {
+	var (
+		total, success int
+	)
+	for _, items := range stages {
+		for _, item := range items {
+			if ref, ok := CanDoHealthCheck(item); ok {
+				logger.Debugf("run HealthCheck")
+				total += 1
+				if ref.LiveNess(m.K8sClient) {
+					success += 1
+				}
+			}
+		}
+	}
+	if success == total {
+
+		//aa:= m.Object(v1alpha1.AsmSpec)
+		m.K8sClient.Status().Update(context.Background(), m.Object.DeepCopyObject())
+	}
+	return nil
 }
 
 func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
 	for _, items := range stages {
 		for _, item := range items {
-			//if item.PreCheck != nil {
-			logger.Debugf("run precheck")
-			if err := loopUntil(context.Background(), 5*time.Second, 10, item.PreCheck, m.K8sClient); err != nil {
-				//item.err = err
-				return err
+			if ref, ok := CanDoPreCheck(item); ok {
+				logger.Debugf("run precheck")
+				if err := loopUntil(context.Background(), 5*time.Second, 10, ref.PreCheck, m.K8sClient); err != nil {
+					return err
+				}
 			}
-			//}
 		}
 		for _, item := range items {
-			//if item.PreRun != nil {
-			logger.Debugf("run prerun")
-			if err := item.PreRun(m.K8sClient); err != nil {
-				//item.err = err
-				return err
+			if ref, ok := CanDoPreRun(item); ok {
+				logger.Debugf("run prerun")
+				if err := ref.PreRun(m.K8sClient); err != nil {
+					return err
+				}
 			}
-			//}
 		}
-		//if err := m.(items); err != nil {
-		//	return err
-		//}
 		for _, item := range items {
-			//if item.Run != nil {
 			logger.Debugf("execute run")
 			if err := item.Run(m); err != nil {
-				//item.err = err
 				return err
 			}
-			//}
 		}
 
 		for _, item := range items {
-			//if item.PostRun != nil {
-			logger.Debugf("run postrun")
-			if err := item.PostRun(m.K8sClient); err != nil {
-				//item.err = err
-				return err
+			if ref, ok := CanDoPostRun(item); ok {
+				logger.Debugf("run postrun")
+				if err := ref.PostRun(m.K8sClient); err != nil {
+					return err
+				}
 			}
-			//}
 		}
 		for _, item := range items {
-			//if item.PostCheck != nil {
-			logger.Debugf("run postcheck")
-			if err := loopUntil(context.Background(), 5*time.Second, 10, item.PostCheck, m.K8sClient); err != nil {
-				//item.err = err
-				return err
+			if ref, ok := CanDoPostCheck(item); ok {
+				logger.Debugf("run postcheck")
+				if err := loopUntil(context.Background(), 5*time.Second, 10, ref.PostCheck, m.K8sClient); err != nil {
+					return err
+				}
 			}
-			//}
 		}
 	}
 	return nil

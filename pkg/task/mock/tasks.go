@@ -27,6 +27,10 @@ func GetDeployStages() [][]manage.ExecuteItem {
 type PatchTask struct {
 }
 
+func (m PatchTask) LiveNess() bool {
+	panic("implement me")
+}
+
 func (m PatchTask) Run(manage *manage.OperatorManage) error {
 	fmt.Println("PatchTask Run")
 	client := manage.K8sClient

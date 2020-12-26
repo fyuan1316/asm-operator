@@ -15,9 +15,16 @@ type SyncManager struct {
 
 type SyncResource struct {
 	manage.Object
-	Sync func(client.Client, manage.Object) error
+	setOwnerRef bool
+	Sync        func(client.Client, manage.Object) error
 }
 
+func (m *SyncResource) SetOwnerRef() {
+	m.setOwnerRef = true
+}
+func (m *SyncResource) IsChargedByOwnerRef() bool {
+	return m.setOwnerRef
+}
 func (m *SyncManager) LoadFile(filePath string, res SyncResource) error {
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -44,12 +51,18 @@ func (m *SyncManager) Load(objectStr string, res SyncResource) error {
 }
 
 func (m *SyncManager) Sync(om *manage.OperatorManage) error {
-	for _, res := range m.K8sResource {
-		err := controllerutil.SetControllerReference(om.Object, res.Object, om.Scheme)
-		if err != nil {
+	for k, res := range m.K8sResource {
+		res11 := m.K8sResource[k]
+		fmt.Println(res11.IsChargedByOwnerRef())
+		if res.IsChargedByOwnerRef() {
+			err := controllerutil.SetControllerReference(om.Object, res.Object, om.Scheme)
+			if err != nil {
+				return err
+			}
+		}
+		if err := res.Sync(om.K8sClient, res.Object); err != nil {
 			return err
 		}
-		_ = res.Sync(om.K8sClient, res.Object)
 	}
 	return nil
 }
