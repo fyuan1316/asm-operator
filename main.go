@@ -19,6 +19,11 @@ package main
 import (
 	"flag"
 	"github.com/fyuan1316/asm-operator/api/dep/crd"
+	promv1 "github.com/fyuan1316/asm-operator/api/dep/monitoring/v1"
+	depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
+	depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
+	depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
+	"k8s.io/client-go/dynamic"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,7 +45,12 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+
 	utilruntime.Must(crd.AddToScheme(scheme))
+	utilruntime.Must(depv1beta1.AddToScheme(scheme))
+	utilruntime.Must(depv1beta2.AddToScheme(scheme))
+	utilruntime.Must(depv1alphba1.AddToScheme(scheme))
+	utilruntime.Must(promv1.AddToScheme(scheme))
 
 	utilruntime.Must(operatorv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
@@ -68,11 +78,17 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
+	dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		panic(err)
+	}
 
 	if err = (&controllers.AsmReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Asm"),
-		Scheme: mgr.GetScheme(),
+		Client:        mgr.GetClient(),
+		DynamicClient: dynamicClient,
+		Config:        mgr.GetConfig(),
+		Log:           ctrl.Log.WithName("controllers").WithName("Asm"),
+		Scheme:        mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Asm")
 		os.Exit(1)

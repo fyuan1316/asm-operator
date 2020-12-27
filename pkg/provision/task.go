@@ -10,10 +10,21 @@ func GetStages() [][]manage.ExecuteItem {
 		{
 			task.ProvisionCrds,
 		},
-		//{
-		//	provisionResources,
-		//},
+		{
+			task.ProvisionResources,
+		},
 	}
 
 	return tasks
 }
+func GetDeleteStages() [][]manage.ExecuteItem {
+	tasks := [][]manage.ExecuteItem{
+		{
+			task.DeleteResources,
+		},
+	}
+
+	return tasks
+}
+
+

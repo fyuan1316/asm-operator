@@ -38,7 +38,7 @@ func TestSyncManager_LoadFile(t *testing.T) {
 				Object: &appsv1.Deployment{},
 				Sync:   sync.FnDeployment,
 			}
-			if err := m.LoadFile(tt.args.filePath, res); (err != nil) != tt.wantErr {
+			if err := m.LoadFile(tt.args.filePath, &res, map[string]interface{}{}); (err != nil) != tt.wantErr {
 				t.Errorf("LoadFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			fmt.Println()

@@ -24,8 +24,8 @@ spec:
         service_name: asm-controller
         {{ .Values.global.labelBaseDomain }}/product: "Service-Mesh"
     spec:
-      affinity:
-      {{- tuple "app" "asm-controller" | include "podAntiAffinity" | indent 6 }}
+      #affinity:
+
       containers:
         - name: manager
           image: "{{ .Values.global.registry.address }}/{{ .Values.global.images.asm_controller.repository }}:{{ .Values.global.images.asm_controller.tag }}"

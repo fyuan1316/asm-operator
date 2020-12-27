@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: asm-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    heritage: {{ $.Release.Service }}
+    release: {{ $.Release.Name }}
+    service_name: asm-controller
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  - name: http-webservice
+    port: 8099
+    protocol: TCP
+    targetPort: 8099
+  selector:
+    app: asm-controller
+  type: ClusterIP
+

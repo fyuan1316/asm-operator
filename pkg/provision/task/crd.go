@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/sync"
+	"github.com/fyuan1316/asm-operator/pkg/task/data"
 	"io/ioutil"
-	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 type ProvisionCrdsTask struct {
@@ -21,26 +20,21 @@ func (p ProvisionCrdsTask) Run(om *manage.OperatorManage) error {
 
 var ProvisionCrds ProvisionCrdsTask
 
-var ClusterAsmDir = "pkg/provision/cluster-asm"
+var ClusterAsmCrdDir = "pkg/provision/cluster-asm/crds"
 
 func init() {
 	ProvisionCrds = ProvisionCrdsTask{}
-	//crdRes := resource.SyncResource{
-	//	Object: &apiextensionsv1.CustomResourceDefinition{},
-	//	Sync:   sync.CreateIFNotFound,
-	//}
-	files, err := ioutil.ReadDir(ClusterAsmDir + "/crds")
+	files, err := ioutil.ReadDir(ClusterAsmCrdDir)
 	if err != nil {
 		panic(err)
 	}
 	for _, file := range files {
-		filepath := ClusterAsmDir + "/crds/" + file.Name()
+		filepath := ClusterAsmCrdDir + "/" + file.Name()
 		err := ProvisionCrds.LoadFile(
 			filepath,
-			resource.SyncResource{
-				Object: &apiextensionsv1.CustomResourceDefinition{},
-				Sync:   sync.CreateIFNotFound,
-			})
+			&resource.SyncResource{},
+			data.GetDefaults(),
+		)
 		if err != nil {
 			panic(err)
 		}

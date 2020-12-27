@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_t1(t *testing.T){
+func Test_t1(t *testing.T) {
 	use1 := TestStruct{}
 
 	//if h,ok := use1.(Human);ok{
@@ -16,10 +16,10 @@ func Test_t1(t *testing.T){
 	we_test(use1)
 
 }
-func we_test(i interface{} ) {
-	if h,ok := i.(Human);ok{
+func we_test(i interface{}) {
+	if h, ok := i.(Human); ok {
 		fmt.Println(h.HasName())
-	}else{
+	} else {
 		fmt.Println("not a human")
 	}
 }

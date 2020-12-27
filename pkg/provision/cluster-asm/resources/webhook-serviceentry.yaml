@@ -1,0 +1,26 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: serviceentry-v1alpha3-validation
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: asm-controller-webhook
+      namespace: {{ $.Release.Namespace }}
+      path: /webhook/validate/serviceentry
+  admissionReviewVersions:
+  - v1beta1
+  failurePolicy: Fail
+  name: vserviceentries.kb.io
+  rules:
+  - apiGroups:
+    - networking.istio.io
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    resources:
+    - serviceentries
+  sideEffects: None

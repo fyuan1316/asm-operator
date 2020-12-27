@@ -1,0 +1,29 @@
+{{- $servicePort := .Values.jaeger.ui.port -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jaeger-query
+  namespace: {{ .Values.istio.namespace }}
+  labels:
+    app: jaeger
+    chart: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    {{- range $key, $value := .Values.jaeger.ingress.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    kubernetes.io/ingress.class: "{{ .Values.global.alb2Name }}"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: "{{ .Values.jaeger.query.basepath }}"
+            backend:
+              serviceName: jaeger-prod-query
+              servicePort: {{ $servicePort }}
+  {{- if .Values.jaeger.ingress.tls }}
+  tls:
+{{ toYaml .Values.jaeger.ingress.tls | indent 4 }}
+  {{- end -}}

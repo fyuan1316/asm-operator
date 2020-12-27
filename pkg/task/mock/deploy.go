@@ -56,9 +56,7 @@ spec:
 `
 
 func init() {
-	deployTask = DeployTask{
-
-	}
+	deployTask = DeployTask{}
 	res := resource.SyncResource{
 		Object: &appsv1.Deployment{},
 		Sync:   sync.FnDeployment,
@@ -96,11 +94,11 @@ func init() {
 		Sync:   sync.FnService,
 	}
 	resSvc.SetOwnerRef()
-	err := deployTask.Load(deploy1, res)
+	err := deployTask.Load(deploy1, &res, map[string]interface{}{})
 	if err != nil {
 		panic(err)
 	}
-	err = deployTask.Load(svc1, resSvc)
+	err = deployTask.Load(svc1, &resSvc, map[string]interface{}{})
 	if err != nil {
 		panic(err)
 	}

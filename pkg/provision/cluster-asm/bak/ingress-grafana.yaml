@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: "{{ .Values.global.alb2Name }}"
+  name: grafana
+  namespace: {{ .Values.istio.namespace }}
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: grafana
+          servicePort: {{ .Values.grafana.servicePort }}
+        path: "{{ .Values.grafana.basepath }}"

@@ -9,3 +9,8 @@ func GetDeployStages() [][]manage.ExecuteItem {
 	//return mock.GetDeployStages()
 	return provision.GetStages()
 }
+
+func GetDeleteStages() [][]manage.ExecuteItem {
+	//return mock.GetDeployStages()
+	return provision.GetDeleteStages()
+}

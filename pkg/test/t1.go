@@ -8,6 +8,6 @@ type Human interface {
 	HasName() string
 }
 
-func (t TestStruct) HasName() string{
+func (t TestStruct) HasName() string {
 	return "mars"
 }

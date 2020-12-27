@@ -4,38 +4,75 @@ import (
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
 	"io/ioutil"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/yaml"
 )
 
+func PointerTrue() *bool {
+	var t = true
+	return &t
+}
+func PointerFalse() *bool {
+	var t = false
+	return &t
+}
+
 type SyncManager struct {
 	K8sResource map[string]SyncResource
+	//top setting
+	SetOwnerReference *bool
+	////key:gvk
+	//DynamicClients map[string]dynamic.NamespaceableResourceInterface
 }
 
 type SyncResource struct {
 	manage.Object
-	setOwnerRef bool
-	Sync        func(client.Client, manage.Object) error
+	SetOwnerReference *bool
+	Sync              func(client.Client, manage.Object) error
+	Delete            func(client.Client, manage.Object) error
 }
 
+func (m *SyncResource) SetObject(o manage.Object) {
+	m.Object = o
+}
 func (m *SyncResource) SetOwnerRef() {
-	m.setOwnerRef = true
+	t := true
+	m.SetOwnerReference = &t
 }
-func (m *SyncResource) IsChargedByOwnerRef() bool {
-	return m.setOwnerRef
+func (m *SyncResource) IsChargedByOwnerRef() *bool {
+	return m.SetOwnerReference
 }
-func (m *SyncManager) LoadFile(filePath string, res SyncResource) error {
+func (m *SyncManager) LoadFile(filePath string, res *SyncResource, values map[string]interface{}) error {
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
-	return m.Load(string(bytes), res)
+	return m.Load(string(bytes), res, values)
 }
-func (m *SyncManager) Load(objectStr string, res SyncResource) error {
+func (m *SyncManager) Load(objectStr string, res *SyncResource, values map[string]interface{}) error {
 	var err error
+	//meta := manage.TypeObjectMeta{}
+	// render values TODO mergeDefaults
+	renderedObjectStr, err := Parse(objectStr, values)
+	if err != nil {
+		return err
+	}
+	unStruct := unstructured.Unstructured{}
+	err = yaml.Unmarshal([]byte(renderedObjectStr), &unStruct)
+
+	if err != nil {
+		return err
+	}
+	if &unStruct == nil {
+		fmt.Println()
+	}
+	if err = updateSyncResource(unStruct, res); err != nil {
+		return err
+	}
 	object := res.Object
-	err = yaml.Unmarshal([]byte(objectStr), object)
+
+	err = yaml.Unmarshal([]byte(renderedObjectStr), object)
 	if err != nil {
 		return err
 	}
@@ -46,22 +83,35 @@ func (m *SyncManager) Load(objectStr string, res SyncResource) error {
 	if m.K8sResource == nil {
 		m.K8sResource = make(map[string]SyncResource)
 	}
-	m.K8sResource[objKey] = res
+	m.K8sResource[objKey] = *res
 	return err
 }
-
 func (m *SyncManager) Sync(om *manage.OperatorManage) error {
-	for k, res := range m.K8sResource {
-		res11 := m.K8sResource[k]
-		fmt.Println(res11.IsChargedByOwnerRef())
-		if res.IsChargedByOwnerRef() {
-			err := controllerutil.SetControllerReference(om.Object, res.Object, om.Scheme)
-			if err != nil {
-				return err
+	for _, res := range m.K8sResource {
+		//资源参数优先
+		/*
+			if res.IsChargedByOwnerRef() != nil && *res.IsChargedByOwnerRef() ||
+				m.SetOwnerReference != nil && *m.SetOwnerReference {
+				err := controllerutil.SetControllerReference(om.Object, res.Object, om.Scheme)
+				if err != nil {
+					return err
+				}
 			}
-		}
+		*/
 		if err := res.Sync(om.K8sClient, res.Object); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func (m *SyncManager) Delete(om *manage.OperatorManage) error {
+	for _, res := range m.K8sResource {
+		if res.IsChargedByOwnerRef() != nil && *res.IsChargedByOwnerRef() ||
+			m.SetOwnerReference != nil && *m.SetOwnerReference {
+			if err := res.Delete(om.K8sClient, res.Object); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

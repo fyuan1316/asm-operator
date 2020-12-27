@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var CreateIFNotFound = func(client client.Client, object manage.Object) error {
+var FnCrd = func(client client.Client, object manage.Object) error {
 	deploy := apiextensionsv1.CustomResourceDefinition{}
 	err := client.Get(context.Background(),
 		types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
