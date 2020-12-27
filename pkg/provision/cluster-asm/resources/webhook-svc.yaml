@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: asm-controller-webhook
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ports:
+    - port: 443
+      targetPort: 9443
+  selector:
+    app: asm-controller

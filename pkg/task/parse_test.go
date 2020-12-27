@@ -25,7 +25,7 @@ func Test_load(t *testing.T) {
 	//}
 	values := resource.TreeValue(map[string]interface{}{
 		"Release.Namespace": "test-fy",
-		"Release.Service": "test-fy",
+		"Release.Service":   "test-fy",
 	})
 
 	err = tmpl.Execute(os.Stdout, values)

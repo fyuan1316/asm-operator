@@ -21,38 +21,99 @@ import (
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
 	"github.com/fyuan1316/asm-operator/pkg/task"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
 
+	operatorv1alpha1 "github.com/fyuan1316/asm-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	operatorv1alpha1 "github.com/fyuan1316/asm-operator/api/v1alpha1"
 )
 
 // AsmReconciler reconciles a Asm object
 type AsmReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	DynamicClient dynamic.Interface
+	Config        *rest.Config
+	Log           logr.Logger
+	Scheme        *runtime.Scheme
 }
 
 var once = sync.Once{}
 var mgr *manage.OperatorManage
-var tasks [][]manage.ExecuteItem
+var (
+	provisionTasks [][]manage.ExecuteItem
+	deletionTasks  [][]manage.ExecuteItem
+)
 
 // +kubebuilder:rbac:groups=operator.alauda.io,resources=asms,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operator.alauda.io,resources=asms/status,verbs=get;update;patch
+const finalizerID = "asms.operator.alauda.io"
 
 func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	var err error
 	_ = context.Background()
 	log := r.Log.WithValues("asm", req.NamespacedName)
 	_ = log
 	// your logic here
+	//GVK := schema.GroupVersionResource{
+	//	Group:    "",
+	//	Version:  "v1",
+	//	Resource: "Namespace",
+	//}
+
+	//GVK := schema.GroupVersionResource{
+	//	Group:    "networking.istio.io",
+	//	Version:  "v1beta1",
+	//	Resource: "virtualservices",
+	//}
+	/*
+		dc, err := discovery.NewDiscoveryClientForConfig(r.Config)
+		if err != nil {
+			panic(err)
+		}
+		typeMeta := metav1.TypeMeta{
+			Kind:       "ClusterConfig", //"VirtualService",
+			APIVersion: "asm.alauda.io/v1beta1",
+		}
+		mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
+		mapping, err := mapper.RESTMapping(typeMeta.GroupVersionKind().GroupKind(), typeMeta.GroupVersionKind().Version)
+		if err != nil {
+			panic(err)
+		}
+		_ = mapping
+		if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
+			r.DynamicClient.Resource(mapping.Resource).Namespace("")
+		} else {
+			r.DynamicClient.Resource(mapping.Resource)
+		}
+		un1 := unstructured.Unstructured{}
+		r.DynamicClient.Resource(mapping.Resource).Create(context.Background(), &un1, metav1.CreateOptions{})
+		un, err := r.DynamicClient.Resource(mapping.Resource).List(context.Background(), metav1.ListOptions{})
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(len(un.Items))
+
+	*/
+
+	//ins := &v1beta1.ClusterConfig{}
+	//err = r.Get(context.TODO(), req.NamespacedName, ins)
+	//if err != nil {
+	//	if errors.IsNotFound(err) {
+	//		// Object not found, return.  Created objects are automatically garbage collected.
+	//		// For additional cleanup logic use finalizers.
+	//		return reconcile.Result{}, nil
+	//	}
+	//	// Error reading the object - requeue the request.
+	//	return reconcile.Result{}, err
+	//}
+
 	instance := &operatorv1alpha1.Asm{}
-	err := r.Get(context.TODO(), req.NamespacedName, instance)
+	err = r.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
@@ -63,16 +124,17 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return reconcile.Result{}, err
 	}
 
-	mgr = manage.NewOperatorManage(r.Client, instance, r.Scheme)
+	mgr = manage.NewOperatorManage(r.Client, instance, r.Scheme, finalizerID)
 	once.Do(func() {
-		tasks = task.GetDeployStages()
+		provisionTasks = task.GetDeployStages()
+		deletionTasks = task.GetDeleteStages()
 	})
-	err = mgr.Reconcile(tasks)
+	result, err := mgr.Reconcile(provisionTasks, deletionTasks)
 	if err != nil {
 		log.Error(err, "Reconcile err")
 	}
 
-	return ctrl.Result{}, nil
+	return result, nil
 }
 
 func (r *AsmReconciler) SetupWithManager(mgr ctrl.Manager) error {

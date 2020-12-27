@@ -54,7 +54,6 @@ func CanDoHealthCheck(inf interface{}) (HealthCheck, bool) {
 	return nil, false
 }
 
-
 type ExecuteItem interface {
 	//PreRun(client.Client) error
 	//PostRun(client.Client) error
@@ -66,5 +65,9 @@ type ExecuteItem interface {
 
 type Object interface {
 	runtime.Object
+	metav1.Object
+}
+type TypeObjectMeta struct {
+	metav1.TypeMeta
 	metav1.Object
 }

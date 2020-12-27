@@ -98,6 +98,7 @@ spec:
                   properties:
                     latestUpdated:
                       format: date-time
+                      nullable: true
                       type: string
                     targets:
                       items:
@@ -302,6 +303,7 @@ spec:
                   properties:
                     latestUpdated:
                       format: date-time
+                      nullable: true
                       type: string
                     targets:
                       items:

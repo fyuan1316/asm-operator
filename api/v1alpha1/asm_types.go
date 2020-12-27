@@ -47,6 +47,7 @@ type AsmStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
 
 // Asm is the Schema for the asms API
 type Asm struct {
