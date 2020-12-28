@@ -3,15 +3,15 @@ package mock
 import (
 	"context"
 	"fmt"
-	"github.com/fyuan1316/asm-operator/pkg/migration"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
+	"github.com/fyuan1316/asm-operator/pkg/task/migration"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func GetDeployStages() [][]manage.ExecuteItem {
-	tasks := [][]manage.ExecuteItem{
+func GetDeployStages() [][]model.ExecuteItem {
+	tasks := [][]model.ExecuteItem{
 		{
 			migration.ChangeCrdTask,
 			PatchTask{},
@@ -27,11 +27,15 @@ func GetDeployStages() [][]manage.ExecuteItem {
 type PatchTask struct {
 }
 
+func (m PatchTask) GetStageName() string {
+	panic("implement me")
+}
+
 func (m PatchTask) LiveNess() bool {
 	panic("implement me")
 }
 
-func (m PatchTask) Run(manage *manage.OperatorManage) error {
+func (m PatchTask) Run(manage *model.OperatorManage) error {
 	fmt.Println("PatchTask Run")
 	client := manage.K8sClient
 	ns := corev1.Namespace{}
@@ -49,7 +53,7 @@ func (m PatchTask) Run(manage *manage.OperatorManage) error {
 	return nil
 }
 
-var _ manage.ExecuteItem = PatchTask{}
+var _ model.ExecuteItem = PatchTask{}
 
 func (m PatchTask) PreRun(client client.Client) error {
 	fmt.Println("PatchTask prerun")

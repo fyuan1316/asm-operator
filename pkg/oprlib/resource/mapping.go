@@ -7,8 +7,8 @@ import (
 	depv1alpha1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
 	depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
 	depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/sync"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource/sync"
 	admissionv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -20,8 +20,8 @@ import (
 )
 
 func updateSyncResource(unStruct unstructured.Unstructured, res *SyncResource) error {
-	var obj manage.Object
-	var syncFn func(client.Client, manage.Object) error
+	var obj model.Object
+	var syncFn func(client.Client, model.Object) error
 	switch unStruct.GetKind() {
 	case "CustomResourceDefinition":
 		obj = &apiextensionsv1.CustomResourceDefinition{}

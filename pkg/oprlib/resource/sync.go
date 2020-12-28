@@ -2,7 +2,7 @@ package resource
 
 import (
 	"fmt"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,19 +21,19 @@ func PointerFalse() *bool {
 type SyncManager struct {
 	K8sResource map[string]SyncResource
 	//top setting
-	SetOwnerReference *bool
+	ChargeByOperator *bool
 	////key:gvk
 	//DynamicClients map[string]dynamic.NamespaceableResourceInterface
 }
 
 type SyncResource struct {
-	manage.Object
+	model.Object
 	SetOwnerReference *bool
-	Sync              func(client.Client, manage.Object) error
-	Delete            func(client.Client, manage.Object) error
+	Sync              func(client.Client, model.Object) error
+	Delete            func(client.Client, model.Object) error
 }
 
-func (m *SyncResource) SetObject(o manage.Object) {
+func (m *SyncResource) SetObject(o model.Object) {
 	m.Object = o
 }
 func (m *SyncResource) SetOwnerRef() {
@@ -86,12 +86,12 @@ func (m *SyncManager) Load(objectStr string, res *SyncResource, values map[strin
 	m.K8sResource[objKey] = *res
 	return err
 }
-func (m *SyncManager) Sync(om *manage.OperatorManage) error {
+func (m *SyncManager) Sync(om *model.OperatorManage) error {
 	for _, res := range m.K8sResource {
 		//资源参数优先
 		/*
 			if res.IsChargedByOwnerRef() != nil && *res.IsChargedByOwnerRef() ||
-				m.SetOwnerReference != nil && *m.SetOwnerReference {
+				m.ChargeByOperator != nil && *m.ChargeByOperator {
 				err := controllerutil.SetControllerReference(om.Object, res.Object, om.Scheme)
 				if err != nil {
 					return err
@@ -105,10 +105,10 @@ func (m *SyncManager) Sync(om *manage.OperatorManage) error {
 	return nil
 }
 
-func (m *SyncManager) Delete(om *manage.OperatorManage) error {
+func (m *SyncManager) Delete(om *model.OperatorManage) error {
 	for _, res := range m.K8sResource {
 		if res.IsChargedByOwnerRef() != nil && *res.IsChargedByOwnerRef() ||
-			m.SetOwnerReference != nil && *m.SetOwnerReference {
+			m.ChargeByOperator != nil && *m.ChargeByOperator {
 			if err := res.Delete(om.K8sClient, res.Object); err != nil {
 				return err
 			}

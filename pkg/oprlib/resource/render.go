@@ -18,24 +18,13 @@ func toYaml(v interface{}) string {
 	return string(data)
 }
 
-func Parse(tpl string /*unStruct unstructured.Unstructured,*/, values map[string]interface{}) (string, error) {
-	//key := fmt.Sprintf("%s-%s-%s", unStruct.GetKind(), unStruct.GetNamespace(), unStruct.GetName())
+func Parse(tpl string, values map[string]interface{}) (string, error) {
 	fm := sprig.GenericFuncMap()
 	fm["toYaml"] = toYaml
 	tmpl, err := template.New("key").Funcs(fm).Parse(string(tpl))
-	//tmpl, err := template.New("key").Parse(string(tpl))
 	if err != nil {
 		return "", err
 	}
-	//values := map[string]interface{}{
-	//	"Release": map[string]interface{}{
-	//		"Namespace": "test-fy",
-	//	},
-	//}
-	//values := TreeValue(map[string]interface{}{
-	//	"Release.Namespace": "test-fy",
-	//	"Release.Service":   "test-fy",
-	//})
 	buf := bytes.Buffer{}
 	err = tmpl.Execute(&buf, values)
 	return buf.String(), nil

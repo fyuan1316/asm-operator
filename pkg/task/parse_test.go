@@ -2,27 +2,40 @@ package task
 
 import (
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
-	"io/ioutil"
 	"os"
 	"testing"
 	"text/template"
 )
 
-func Test_load(t *testing.T) {
+var metrics = `apiVersion: v1
+kind: Service
+metadata:
+  name: asm-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    heritage: {{ $.Release.Service }}
+    release: {{ $.Release.Name }}
+    service_name: asm-controller
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  - name: http-webservice
+    port: 8099
+    protocol: TCP
+    targetPort: 8099
+  selector:
+    app: asm-controller
+  type: ClusterIP
+`
 
-	f, err := ioutil.ReadFile("cluster-asm/resources/asm-metrics.yaml")
+func Test_load(t *testing.T) {
+	tmpl, err := template.New("test").Parse(metrics)
 	if err != nil {
 		panic(err)
 	}
-	tmpl, err := template.New("test").Parse(string(f))
-	if err != nil {
-		panic(err)
-	}
-	//values := map[string]interface{}{
-	//	"Release": map[string]interface{}{
-	//		"Namespace": "test-fy",
-	//	},
-	//}
 	values := resource.TreeValue(map[string]interface{}{
 		"Release.Namespace": "test-fy",
 		"Release.Service":   "test-fy",
