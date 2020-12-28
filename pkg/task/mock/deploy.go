@@ -2,9 +2,9 @@ package mock
 
 import (
 	"fmt"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/sync"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource/sync"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -12,6 +12,10 @@ import (
 
 type DeployTask struct {
 	resource.SyncManager
+}
+
+func (m DeployTask) GetStageName() string {
+	panic("implement me")
 }
 
 var deployTask DeployTask
@@ -68,7 +72,7 @@ func init() {
 		//	)
 		//	if err != nil {
 		//		if errors.IsNotFound(err) {
-		//			errCreate := client.Create(context.Background(), object)
+		//			errCreate := client.Objecteate(context.Background(), object)
 		//			if errCreate != nil {
 		//				return errCreate
 		//			}
@@ -104,7 +108,7 @@ func init() {
 	}
 }
 
-var _ manage.ExecuteItem = DeployTask{}
+var _ model.ExecuteItem = DeployTask{}
 
 func (m DeployTask) PreRun(client client.Client) error {
 	fmt.Println("DeployTask prerun")
@@ -126,7 +130,7 @@ func (m DeployTask) PostCheck(client client.Client) (bool, error) {
 	return true, nil
 }
 
-func (m DeployTask) Run(om *manage.OperatorManage) error {
+func (m DeployTask) Run(om *model.OperatorManage) error {
 	fmt.Println("DeployTask Run")
 	err := m.Sync(om)
 	return err

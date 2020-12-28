@@ -2,7 +2,7 @@ package resource
 
 import (
 	"fmt"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/sync"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource/sync"
 	appsv1 "k8s.io/api/apps/v1"
 	"testing"
 )

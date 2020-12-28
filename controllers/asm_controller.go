@@ -19,7 +19,9 @@ package controllers
 import (
 	"context"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
-	"github.com/fyuan1316/asm-operator/pkg/task"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/options"
+	"github.com/fyuan1316/asm-operator/pkg/task/entry"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -43,10 +45,10 @@ type AsmReconciler struct {
 }
 
 var once = sync.Once{}
-var mgr *manage.OperatorManage
+var mgr *model.OperatorManage
 var (
-	provisionTasks [][]manage.ExecuteItem
-	deletionTasks  [][]manage.ExecuteItem
+	provisionTasks [][]model.ExecuteItem
+	deletionTasks  [][]model.ExecuteItem
 )
 
 // +kubebuilder:rbac:groups=operator.alauda.io,resources=asms,verbs=get;list;watch;create;update;patch;delete
@@ -58,65 +60,12 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
 	log := r.Log.WithValues("asm", req.NamespacedName)
 	_ = log
-	// your logic here
-	//GVK := schema.GroupVersionResource{
-	//	Group:    "",
-	//	Version:  "v1",
-	//	Resource: "Namespace",
-	//}
-
-	//GVK := schema.GroupVersionResource{
-	//	Group:    "networking.istio.io",
-	//	Version:  "v1beta1",
-	//	Resource: "virtualservices",
-	//}
-	/*
-		dc, err := discovery.NewDiscoveryClientForConfig(r.Config)
-		if err != nil {
-			panic(err)
-		}
-		typeMeta := metav1.TypeMeta{
-			Kind:       "ClusterConfig", //"VirtualService",
-			APIVersion: "asm.alauda.io/v1beta1",
-		}
-		mapper := restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(dc))
-		mapping, err := mapper.RESTMapping(typeMeta.GroupVersionKind().GroupKind(), typeMeta.GroupVersionKind().Version)
-		if err != nil {
-			panic(err)
-		}
-		_ = mapping
-		if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
-			r.DynamicClient.Resource(mapping.Resource).Namespace("")
-		} else {
-			r.DynamicClient.Resource(mapping.Resource)
-		}
-		un1 := unstructured.Unstructured{}
-		r.DynamicClient.Resource(mapping.Resource).Create(context.Background(), &un1, metav1.CreateOptions{})
-		un, err := r.DynamicClient.Resource(mapping.Resource).List(context.Background(), metav1.ListOptions{})
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(len(un.Items))
-
-	*/
-
-	//ins := &v1beta1.ClusterConfig{}
-	//err = r.Get(context.TODO(), req.NamespacedName, ins)
-	//if err != nil {
-	//	if errors.IsNotFound(err) {
-	//		// Object not found, return.  Created objects are automatically garbage collected.
-	//		// For additional cleanup logic use finalizers.
-	//		return reconcile.Result{}, nil
-	//	}
-	//	// Error reading the object - requeue the request.
-	//	return reconcile.Result{}, err
-	//}
 
 	instance := &operatorv1alpha1.Asm{}
 	err = r.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
+			// CR not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
 			return reconcile.Result{}, nil
 		}
@@ -124,10 +73,13 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return reconcile.Result{}, err
 	}
 
-	mgr = manage.NewOperatorManage(r.Client, instance, r.Scheme, finalizerID)
+	mgr = manage.NewOperatorManage(
+		r.Client, instance,
+		options.SetScheme(r.Scheme),
+		options.SetFinalizer(finalizerID))
 	once.Do(func() {
-		provisionTasks = task.GetDeployStages()
-		deletionTasks = task.GetDeleteStages()
+		provisionTasks = entry.GetDeployStages()
+		deletionTasks = entry.GetDeleteStages()
 	})
 	result, err := mgr.Reconcile(provisionTasks, deletionTasks)
 	if err != nil {

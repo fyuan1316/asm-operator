@@ -23,6 +23,7 @@ import (
 	depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
 	depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
 	depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
+	"github.com/fyuan1316/asm-operator/pkg/task/entry"
 	"k8s.io/client-go/dynamic"
 	"os"
 
@@ -94,6 +95,11 @@ func main() {
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
+
+	//setup tasks
+	if err := entry.SetUp(); err != nil {
+		panic(err)
+	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
