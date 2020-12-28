@@ -25,13 +25,12 @@ func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteIt
 				RequeueAfter: time.Second * 1,
 			}, nil
 		}
-	} else {
+	} else if !m.CR.GetDeletionTimestamp().IsZero() {
 		if len(deletionStages) > 0 {
 			if err := m.ProcessStages(deletionStages); err != nil {
 				return ctrl.Result{}, err
 			}
 		}
-		//TODO fy check contains finalizerID?
 		f := RemoveString(m.CR.GetFinalizers(), m.FinalizerID)
 		m.CR.SetFinalizers(f)
 		if err := m.K8sClient.Update(context.Background(), m.CR); err != nil {
