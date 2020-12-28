@@ -3,15 +3,15 @@ package mock
 import (
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource/sync"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource/sync"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type DeployTask struct {
-	resource.SyncManager
+	resource.Task
 }
 
 func (m DeployTask) GetStageName() string {
@@ -98,11 +98,11 @@ func init() {
 		Sync:   sync.FnService,
 	}
 	resSvc.SetOwnerRef()
-	err := deployTask.Load(deploy1, &res, map[string]interface{}{})
+	err := deployTask.Load(deploy1)
 	if err != nil {
 		panic(err)
 	}
-	err = deployTask.Load(svc1, &resSvc, map[string]interface{}{})
+	err = deployTask.Load(svc1)
 	if err != nil {
 		panic(err)
 	}

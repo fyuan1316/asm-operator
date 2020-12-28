@@ -1,11 +1,12 @@
-package task
+package tasks
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
+	resource2 "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
 	"github.com/fyuan1316/asm-operator/pkg/task"
 	"github.com/fyuan1316/asm-operator/pkg/task/data"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -17,7 +18,7 @@ import (
 )
 
 type ProvisionCrdsTask struct {
-	resource.SyncManager
+	resource.Task
 }
 
 func (p ProvisionCrdsTask) GetStageName() string {
@@ -58,20 +59,22 @@ func (p ProvisionCrdsTask) Run(om *model.OperatorManage) error {
 
 var ProvisionCrds ProvisionCrdsTask
 
-var ClusterAsmCrdDir = "pkg/provision/cluster-asm/crds"
+var ClusterAsmCrdDir = "pkg/task/provision/cluster-asm/crds"
 
 func SetUpCrds() {
-	ProvisionCrds = ProvisionCrdsTask{}
+	ProvisionCrds = ProvisionCrdsTask{
+		Task: resource.Task{
+			TemplateValues: data.GetDefaults(),
+		},
+	}
 
-	files, err := resource.GetFilesInFolder(ClusterAsmCrdDir, resource.Suffix(".yaml"))
+	files, err := resource2.GetFilesInFolder(ClusterAsmCrdDir, resource2.Suffix(".yaml"))
 	if err != nil {
 		panic(err)
 	}
 	for _, file := range files {
 		err := ProvisionCrds.LoadFile(
 			file,
-			&resource.SyncResource{},
-			data.GetDefaults(),
 		)
 		if err != nil {
 			panic(err)

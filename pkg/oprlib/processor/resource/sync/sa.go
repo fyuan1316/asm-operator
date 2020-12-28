@@ -3,15 +3,17 @@ package sync
 import (
 	"context"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/equality"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var FnIngress = func(client client.Client, object model.Object) error {
-	deploy := extv1beta1.Ingress{}
+var GeneratorServiceAccount = func() model.Object {
+	return &corev1.ServiceAccount{}
+}
+var FnServiceAccount = func(client client.Client, object model.Object) error {
+	deploy := corev1.ServiceAccount{}
 	err := client.Get(context.Background(),
 		types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
 		&deploy,
@@ -25,14 +27,6 @@ var FnIngress = func(client client.Client, object model.Object) error {
 			return nil
 		}
 		return err
-	}
-	//update
-	wanted := object.(*extv1beta1.Ingress)
-	if !equality.Semantic.DeepDerivative(wanted.Spec, deploy.Spec) {
-		deploy.Spec = wanted.Spec
-		if errUpd := client.Update(context.Background(), &deploy); errUpd != nil {
-			return errUpd
-		}
 	}
 	return nil
 }

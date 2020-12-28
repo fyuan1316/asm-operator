@@ -2,16 +2,19 @@ package sync
 
 import (
 	"context"
-	depv1alpha1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var FnCanaryTemplate = func(client client.Client, object model.Object) error {
-	deploy := depv1alpha1.CanaryTemplate{}
+var GeneratorIngress = func() model.Object {
+	return &extv1beta1.Ingress{}
+}
+var FnIngress = func(client client.Client, object model.Object) error {
+	deploy := extv1beta1.Ingress{}
 	err := client.Get(context.Background(),
 		types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
 		&deploy,
@@ -27,7 +30,7 @@ var FnCanaryTemplate = func(client client.Client, object model.Object) error {
 		return err
 	}
 	//update
-	wanted := object.(*depv1alpha1.CanaryTemplate)
+	wanted := object.(*extv1beta1.Ingress)
 	if !equality.Semantic.DeepDerivative(wanted.Spec, deploy.Spec) {
 		deploy.Spec = wanted.Spec
 		if errUpd := client.Update(context.Background(), &deploy); errUpd != nil {

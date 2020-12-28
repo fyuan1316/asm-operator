@@ -1,7 +1,7 @@
 package task
 
 import (
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
 	"os"
 	"testing"
 	"text/template"

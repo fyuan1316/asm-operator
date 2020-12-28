@@ -3,15 +3,18 @@ package sync
 import (
 	"context"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var FnDeployment = func(client client.Client, object model.Object) error {
-	deploy := appsv1.Deployment{}
+var GeneratorService = func() model.Object {
+	return &corev1.Service{}
+}
+var FnService = func(client client.Client, object model.Object) error {
+	deploy := corev1.Service{}
 	err := client.Get(context.Background(),
 		types.NamespacedName{Namespace: object.GetNamespace(), Name: object.GetName()},
 		&deploy,
@@ -27,7 +30,7 @@ var FnDeployment = func(client client.Client, object model.Object) error {
 		return err
 	}
 	//update
-	wanted := object.(*appsv1.Deployment)
+	wanted := object.(*corev1.Service)
 	if !equality.Semantic.DeepDerivative(wanted.Spec, deploy.Spec) {
 		deploy.Spec = wanted.Spec
 		if errUpd := client.Update(context.Background(), &deploy); errUpd != nil {

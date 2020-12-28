@@ -2,16 +2,16 @@ package provision
 
 import (
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	"github.com/fyuan1316/asm-operator/pkg/task/provision/task"
+	"github.com/fyuan1316/asm-operator/pkg/task/provision/tasks"
 )
 
 func GetStages() [][]model.ExecuteItem {
 	tasks := [][]model.ExecuteItem{
 		{
-			task.ProvisionCrds,
+			tasks.ProvisionCrds,
 		},
 		{
-			task.ProvisionResources,
+			tasks.ProvisionResources,
 		},
 	}
 
@@ -20,7 +20,7 @@ func GetStages() [][]model.ExecuteItem {
 func GetDeleteStages() [][]model.ExecuteItem {
 	tasks := [][]model.ExecuteItem{
 		{
-			task.DeleteResources,
+			tasks.DeleteResources,
 		},
 	}
 

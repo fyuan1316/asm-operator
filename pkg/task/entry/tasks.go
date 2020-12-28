@@ -3,7 +3,7 @@ package entry
 import (
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/task/provision"
-	"github.com/fyuan1316/asm-operator/pkg/task/provision/task"
+	"github.com/fyuan1316/asm-operator/pkg/task/provision/tasks"
 )
 
 func GetAllProvisionStages() [][]model.ExecuteItem {
@@ -13,6 +13,7 @@ func GetAllProvisionStages() [][]model.ExecuteItem {
 
 func GetDeployStages() [][]model.ExecuteItem {
 	//return mock.GetDeployStages()
+	//append(migration)
 	return provision.GetStages()
 }
 
@@ -22,8 +23,8 @@ func GetDeleteStages() [][]model.ExecuteItem {
 }
 
 func SetUp() error {
-	task.SetUpCrds()
-	task.SetUpResource()
-	task.SetUpDeletion()
+	tasks.SetUpCrds()
+	tasks.SetUpResource()
+	tasks.SetUpDeletion()
 	return nil
 }

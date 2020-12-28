@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	"github.com/fyuan1316/asm-operator/pkg/task/migration"
+	tasks2 "github.com/fyuan1316/asm-operator/pkg/task/migration/tasks"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -13,7 +13,7 @@ import (
 func GetDeployStages() [][]model.ExecuteItem {
 	tasks := [][]model.ExecuteItem{
 		{
-			migration.ChangeCrdTask,
+			tasks2.ChangeCrdTask,
 			PatchTask{},
 		},
 		{

@@ -10,6 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorCaseMonitorv1beta1 = func() model.Object {
+	return &depv1beta1.CaseMonitor{}
+}
 var FnCreateCaseMonitorv1beta1 = func(client client.Client, object model.Object) error {
 	deploy := depv1beta1.CaseMonitor{}
 	err := client.Get(context.Background(),
@@ -28,7 +31,9 @@ var FnCreateCaseMonitorv1beta1 = func(client client.Client, object model.Object)
 	}
 	return nil
 }
-
+var GeneratorCaseMonitorv1beta2 = func() model.Object {
+	return &depv1beta2.CaseMonitor{}
+}
 var FnCreateCaseMonitorv1beta2 = func(client client.Client, object model.Object) error {
 	deploy := depv1beta2.CaseMonitor{}
 	err := client.Get(context.Background(),

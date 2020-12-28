@@ -1,6 +1,6 @@
 package data
 
-import "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
+import "github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
 
 func GetDefaults() map[string]interface{} {
 	values := resource.TreeValue(map[string]interface{}{

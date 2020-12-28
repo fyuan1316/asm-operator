@@ -9,6 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorClusterRoleBinding = func() model.Object {
+	return &rbacv1.ClusterRoleBinding{}
+}
 var FnClusterRoleBinding = func(client client.Client, object model.Object) error {
 	deploy := rbacv1.ClusterRoleBinding{}
 	err := client.Get(context.Background(),
@@ -27,7 +30,9 @@ var FnClusterRoleBinding = func(client client.Client, object model.Object) error
 	}
 	return nil
 }
-
+var GeneratorClusterRole = func() model.Object {
+	return &rbacv1.ClusterRole{}
+}
 var FnClusterRole = func(client client.Client, object model.Object) error {
 	deploy := rbacv1.ClusterRole{}
 	err := client.Get(context.Background(),
@@ -46,7 +51,9 @@ var FnClusterRole = func(client client.Client, object model.Object) error {
 	}
 	return nil
 }
-
+var GeneratorRoleBinding = func() model.Object {
+	return &rbacv1.RoleBinding{}
+}
 var FnRoleBinding = func(client client.Client, object model.Object) error {
 	deploy := rbacv1.RoleBinding{}
 	err := client.Get(context.Background(),
