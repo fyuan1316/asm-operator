@@ -1,25 +1,20 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 )
 
 func Test_t1(t *testing.T) {
-	use1 := TestStruct{}
-
-	//if h,ok := use1.(Human);ok{
-	//	fmt.Println()
-	//}else{
-	//	fmt.Println("not a human")
-	//}
-	we_test(use1)
+	cleanTask := &CleanTask{
+		Task{},
+	}
+	cleanTask.executor = cleanTask // 实现hook函数的效果：由子类负责编写业务代码
+	cleanTask.Start()
 
 }
-func we_test(i interface{}) {
-	if h, ok := i.(Human); ok {
-		fmt.Println(h.HasName())
-	} else {
-		fmt.Println("not a human")
-	}
+
+func Test_useDefaultProcess(t *testing.T) {
+	cleanTask := &Task{}
+	cleanTask.executor = cleanTask
+	cleanTask.Start()
 }

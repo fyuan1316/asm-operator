@@ -93,9 +93,11 @@ func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
 			}
 		}
 		for _, item := range items {
-			logger.Debugf("execute run")
-			if err := item.Run(m); err != nil {
-				return err
+			if ref, ok := CanDoRun(item); ok {
+				logger.Debugf("execute run")
+				if err := ref.Run(m); err != nil {
+					return err
+				}
 			}
 		}
 

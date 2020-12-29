@@ -2,8 +2,6 @@ package resource
 
 import (
 	"fmt"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/resource/sync"
-	appsv1 "k8s.io/api/apps/v1"
 	"testing"
 )
 
@@ -29,16 +27,13 @@ func TestSyncManager_LoadFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &SyncManager{
+			m := &Task{
 				K8sResource: map[string]SyncResource{
 					"test1": tt.fields.K8sResource,
 				},
 			}
-			res := SyncResource{
-				Object: &appsv1.Deployment{},
-				Sync:   sync.FnDeployment,
-			}
-			if err := m.LoadFile(tt.args.filePath, &res, map[string]interface{}{}); (err != nil) != tt.wantErr {
+
+			if err := m.LoadFile(tt.args.filePath); (err != nil) != tt.wantErr {
 				t.Errorf("LoadFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			fmt.Println()

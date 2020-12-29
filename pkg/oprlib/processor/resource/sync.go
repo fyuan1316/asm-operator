@@ -1,12 +1,10 @@
 package resource
 
 import (
-	"fmt"
+	"errors"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	"io/ioutil"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/yaml"
 )
 
 func PointerTrue() *bool {
@@ -18,19 +16,66 @@ func PointerFalse() *bool {
 	return &t
 }
 
-type SyncManager struct {
+type Task struct {
+	//子类override 接口
+	Implementor model.Operation
+
+	//资源mappings hook
+	ResourceMappings map[metav1.TypeMeta]K8sResourceMapping
+
+	//ResourceOptions  map[string]YamlResource
+	//归属任务的资源集
 	K8sResource map[string]SyncResource
-	//top setting
-	ChargeByOperator *bool
-	////key:gvk
-	//DynamicClients map[string]dynamic.NamespaceableResourceInterface
+
+	//任务层面资源是否随operator删除的设定
+	KeepResourceAfterOperatorDeleted *bool
+
+	//任务级别的values数据，一般对应到一个chart的values
+	TemplateValues map[string]interface{}
 }
 
+func (m Task) GetStageName() string {
+	panic("implement me")
+}
+
+func (m Task) Run(manage *model.OperatorManage) error {
+	if m.Implementor.GetOperation() == model.Operations.Provision {
+		return m.Sync(manage)
+	} else if m.Implementor.GetOperation() == model.Operations.Deletion {
+		return m.Delete(manage)
+	} else {
+		return errors.New("UnSupport type of ResourceTask")
+	}
+}
+
+var _ model.ExecuteItem = Task{}
+
+//type YamlResource struct {
+//	model.Object
+//	ChargeByOperator *bool
+//}
+
 type SyncResource struct {
+	FileInfo
 	model.Object
-	SetOwnerReference *bool
-	Sync              func(client.Client, model.Object) error
-	Delete            func(client.Client, model.Object) error
+	//ChargeByOperator *bool
+	Sync   func(client.Client, model.Object) error
+	Delete func(client.Client, model.Object) error
+}
+
+func NewSyncResource(
+	object model.Object,
+	sync func(client.Client, model.Object) error,
+	delete func(client.Client, model.Object) error) *SyncResource {
+	res := &SyncResource{FileInfo: FileInfo{}}
+	res.Object = object
+	res.Sync = sync
+	res.Delete = delete
+	return res
+}
+
+func (m *SyncResource) FromMappings(resMapping *K8sResourceMapping) *SyncResource {
+	return NewSyncResource(resMapping.Object, resMapping.Sync, resMapping.Deletion)
 }
 
 func (m *SyncResource) SetObject(o model.Object) {
@@ -38,19 +83,21 @@ func (m *SyncResource) SetObject(o model.Object) {
 }
 func (m *SyncResource) SetOwnerRef() {
 	t := true
-	m.SetOwnerReference = &t
+	m.ChargeByOperator = &t
 }
 func (m *SyncResource) IsChargedByOwnerRef() *bool {
-	return m.SetOwnerReference
+	return m.ChargeByOperator
 }
-func (m *SyncManager) LoadFile(filePath string, res *SyncResource, values map[string]interface{}) error {
+
+/*
+func (m *Task) LoadFile(filePath string, res *SyncResource, values map[string]interface{}) error {
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 	return m.Load(string(bytes), res, values)
 }
-func (m *SyncManager) Load(objectStr string, res *SyncResource, values map[string]interface{}) error {
+func (m *Task) Load(objectStr string, res *SyncResource, values map[string]interface{}) error {
 	var err error
 	//meta := manage.TypeObjectMeta{}
 	// render values TODO mergeDefaults
@@ -86,7 +133,8 @@ func (m *SyncManager) Load(objectStr string, res *SyncResource, values map[strin
 	m.K8sResource[objKey] = *res
 	return err
 }
-func (m *SyncManager) Sync(om *model.OperatorManage) error {
+*/
+func (m *Task) Sync(om *model.OperatorManage) error {
 	for _, res := range m.K8sResource {
 		//资源参数优先
 		/*
@@ -105,10 +153,10 @@ func (m *SyncManager) Sync(om *model.OperatorManage) error {
 	return nil
 }
 
-func (m *SyncManager) Delete(om *model.OperatorManage) error {
+func (m *Task) Delete(om *model.OperatorManage) error {
 	for _, res := range m.K8sResource {
 		if res.IsChargedByOwnerRef() != nil && *res.IsChargedByOwnerRef() ||
-			m.ChargeByOperator != nil && *m.ChargeByOperator {
+			m.KeepResourceAfterOperatorDeleted != nil && !*m.KeepResourceAfterOperatorDeleted {
 			if err := res.Delete(om.K8sClient, res.Object); err != nil {
 				return err
 			}
