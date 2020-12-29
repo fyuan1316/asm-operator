@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func PointerTrue() *bool {
@@ -16,12 +15,14 @@ func PointerFalse() *bool {
 	return &t
 }
 
+var _ model.ExecuteItem = Task{}
+
 type Task struct {
 	//子类override 接口
 	Implementor model.Operation
 
 	//资源mappings hook
-	ResourceMappings map[metav1.TypeMeta]K8sResourceMapping
+	ResourceMappings map[metav1.TypeMeta]*K8sResourceMapping
 
 	//ResourceOptions  map[string]YamlResource
 	//归属任务的资源集
@@ -48,34 +49,19 @@ func (m Task) Run(manage *model.OperatorManage) error {
 	}
 }
 
-var _ model.ExecuteItem = Task{}
-
-//type YamlResource struct {
-//	model.Object
-//	ChargeByOperator *bool
-//}
-
 type SyncResource struct {
 	FileInfo
 	model.Object
-	//ChargeByOperator *bool
-	Sync   func(client.Client, model.Object) error
-	Delete func(client.Client, model.Object) error
+	Sync   SyncFunction
+	Delete SyncFunction
 }
 
-func NewSyncResource(
-	object model.Object,
-	sync func(client.Client, model.Object) error,
-	delete func(client.Client, model.Object) error) *SyncResource {
+func NewSyncResource(resMapping *K8sResourceMapping) *SyncResource {
 	res := &SyncResource{FileInfo: FileInfo{}}
-	res.Object = object
-	res.Sync = sync
-	res.Delete = delete
+	res.Object = resMapping.ObjectGenerator()
+	res.Sync = resMapping.Sync
+	res.Delete = resMapping.Deletion
 	return res
-}
-
-func (m *SyncResource) FromMappings(resMapping *K8sResourceMapping) *SyncResource {
-	return NewSyncResource(resMapping.Object, resMapping.Sync, resMapping.Deletion)
 }
 
 func (m *SyncResource) SetObject(o model.Object) {
@@ -89,51 +75,6 @@ func (m *SyncResource) IsChargedByOwnerRef() *bool {
 	return m.ChargeByOperator
 }
 
-/*
-func (m *Task) LoadFile(filePath string, res *SyncResource, values map[string]interface{}) error {
-	bytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-	return m.Load(string(bytes), res, values)
-}
-func (m *Task) Load(objectStr string, res *SyncResource, values map[string]interface{}) error {
-	var err error
-	//meta := manage.TypeObjectMeta{}
-	// render values TODO mergeDefaults
-	renderedObjectStr, err := Parse(objectStr, values)
-	if err != nil {
-		return err
-	}
-	unStruct := unstructured.Unstructured{}
-	err = yaml.Unmarshal([]byte(renderedObjectStr), &unStruct)
-
-	if err != nil {
-		return err
-	}
-	if &unStruct == nil {
-		fmt.Println()
-	}
-	if err = updateSyncResource(unStruct, res); err != nil {
-		return err
-	}
-	object := res.Object
-
-	err = yaml.Unmarshal([]byte(renderedObjectStr), object)
-	if err != nil {
-		return err
-	}
-	objKey := fmt.Sprintf("%s-%s-%s", object.GetObjectKind().GroupVersionKind().Kind,
-		object.GetNamespace(),
-		object.GetName(),
-	)
-	if m.K8sResource == nil {
-		m.K8sResource = make(map[string]SyncResource)
-	}
-	m.K8sResource[objKey] = *res
-	return err
-}
-*/
 func (m *Task) Sync(om *model.OperatorManage) error {
 	for _, res := range m.K8sResource {
 		//资源参数优先

@@ -1,4 +1,4 @@
-package migration
+package tasks
 
 import (
 	"fmt"
@@ -9,38 +9,39 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var _ model.ExecuteItem = ShellTask{}
+
 type ShellTask struct {
 	shell.ScriptManager
 }
 
-func (s ShellTask) GetStageName() string {
+var ShellTasks ShellTask
+
+func (t ShellTask) GetStageName() string {
 	return task.StageMigration
 }
 
-var shellTask ShellTask
 var MigrationShellDir = "pkg/task/migration/shell"
 
 func SetUpMigShell() {
-	shellTask = ShellTask{}
+	ShellTasks = ShellTask{}
 	files, err := resource2.GetFilesInFolder(MigrationShellDir, resource2.Suffix(".sh"))
 	if err != nil {
 		panic(err)
 	}
 	for _, file := range files {
-		err := shellTask.Load(file)
+		err := ShellTasks.Load(file)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func (m ShellTask) PreRun(client client.Client) error {
+func (t ShellTask) PreRun(client client.Client) error {
 	fmt.Println("ShellTask prerun")
 
 	return nil
 }
-func (s ShellTask) Run(manage *model.OperatorManage) error {
+func (t ShellTask) Run(manage *model.OperatorManage) error {
 	return nil
 }
-
-var _ model.ExecuteItem = ShellTask{}

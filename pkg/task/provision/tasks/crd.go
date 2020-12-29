@@ -1,4 +1,4 @@
-package task
+package tasks
 
 import (
 	"context"
@@ -75,8 +75,6 @@ func SetUpCrds() {
 	for _, file := range files {
 		err := ProvisionCrds.LoadFile(
 			file,
-			//&resource.SyncResource{},
-			//data.GetDefaults(),
 		)
 		if err != nil {
 			panic(err)

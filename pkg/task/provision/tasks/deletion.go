@@ -1,4 +1,4 @@
-package task
+package tasks
 
 import (
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"

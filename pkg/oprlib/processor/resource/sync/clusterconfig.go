@@ -9,6 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorClusterConfig = func() model.Object {
+	return &depv1beta1.ClusterConfig{}
+}
 var FnCreateClusterConfig = func(client client.Client, object model.Object) error {
 	deploy := depv1beta1.ClusterConfig{}
 	err := client.Get(context.Background(),

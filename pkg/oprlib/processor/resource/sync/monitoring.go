@@ -10,6 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorServiceMonitor = func() model.Object {
+	return &v1.ServiceMonitor{}
+}
 var FnServiceMonitor = func(client client.Client, object model.Object) error {
 	deploy := v1.ServiceMonitor{}
 	err := client.Get(context.Background(),
@@ -36,7 +39,9 @@ var FnServiceMonitor = func(client client.Client, object model.Object) error {
 	}
 	return nil
 }
-
+var GeneratorPodMonitor = func() model.Object {
+	return &v1.PodMonitor{}
+}
 var FnPodMonitor = func(client client.Client, object model.Object) error {
 	deploy := v1.PodMonitor{}
 	err := client.Get(context.Background(),

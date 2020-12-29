@@ -10,6 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorDeployment = func() model.Object {
+	return &appsv1.Deployment{}
+}
 var FnDeployment = func(client client.Client, object model.Object) error {
 	deploy := appsv1.Deployment{}
 	err := client.Get(context.Background(),

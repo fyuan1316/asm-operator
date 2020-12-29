@@ -9,6 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorCrd = func() model.Object {
+	return &apiextensionsv1.CustomResourceDefinition{}
+}
 var FnCrd = func(client client.Client, object model.Object) error {
 	deploy := apiextensionsv1.CustomResourceDefinition{}
 	err := client.Get(context.Background(),

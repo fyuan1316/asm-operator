@@ -10,6 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorCanaryTemplate = func() model.Object {
+	return &depv1alpha1.CanaryTemplate{}
+}
 var FnCanaryTemplate = func(client client.Client, object model.Object) error {
 	deploy := depv1alpha1.CanaryTemplate{}
 	err := client.Get(context.Background(),

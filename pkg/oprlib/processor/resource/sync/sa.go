@@ -9,6 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorServiceAccount = func() model.Object {
+	return &corev1.ServiceAccount{}
+}
 var FnServiceAccount = func(client client.Client, object model.Object) error {
 	deploy := corev1.ServiceAccount{}
 	err := client.Get(context.Background(),

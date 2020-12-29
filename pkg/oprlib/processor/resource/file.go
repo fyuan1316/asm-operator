@@ -8,11 +8,17 @@ import (
 )
 
 type FileInfo struct {
+	FilePath         string
 	ChargeByOperator *bool
 }
 
 type FileOption func(spec *FileInfo)
 
+func SetFilePath(path string) FileOption {
+	return func(spec *FileInfo) {
+		spec.FilePath = path
+	}
+}
 func KeepResourceAfterOperatorDeleted() FileOption {
 	return func(spec *FileInfo) {
 		b := true
@@ -21,12 +27,14 @@ func KeepResourceAfterOperatorDeleted() FileOption {
 }
 
 func (m *Task) LoadFile(filePath string, opts ...FileOption) error {
+	//execution order by fileName order
+	opts = append(opts, SetFilePath(filePath))
 
 	bytes, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
-	return m.Load(string(bytes))
+	return m.Load(string(bytes), opts...)
 }
 func (m *Task) Load(objectStr string, opts ...FileOption) error {
 	var err error
@@ -52,9 +60,6 @@ func (m *Task) Load(objectStr string, opts ...FileOption) error {
 		for _, opt := range opts {
 			opt(&res.FileInfo)
 		}
-		//if err = updateSyncResource(unStruct, res); err != nil {
-		//	return err
-		//}
 
 		object := res.Object
 		err = yaml.Unmarshal([]byte(renderedObjectStr), object)
@@ -62,7 +67,9 @@ func (m *Task) Load(objectStr string, opts ...FileOption) error {
 			return err
 		}
 		//TODO fy 按文件名顺序排序
-		objKey := fmt.Sprintf("-%s-%s-%s", object.GetObjectKind().GroupVersionKind().Kind,
+		objKey := fmt.Sprintf("%s-%s-%s-%s",
+			res.FilePath,
+			object.GetObjectKind().GroupVersionKind().Kind,
 			object.GetNamespace(),
 			object.GetName(),
 		)

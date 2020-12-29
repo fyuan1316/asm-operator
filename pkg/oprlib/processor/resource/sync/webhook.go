@@ -9,6 +9,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorValidatingWebhookConfiguration = func() model.Object {
+	return &v1.ValidatingWebhookConfiguration{}
+}
 var FnValidatingWebhookConfiguration = func(client client.Client, object model.Object) error {
 	deploy := v1.ValidatingWebhookConfiguration{}
 	err := client.Get(context.Background(),

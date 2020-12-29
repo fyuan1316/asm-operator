@@ -10,6 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var GeneratorIngress = func() model.Object {
+	return &extv1beta1.Ingress{}
+}
 var FnIngress = func(client client.Client, object model.Object) error {
 	deploy := extv1beta1.Ingress{}
 	err := client.Get(context.Background(),
