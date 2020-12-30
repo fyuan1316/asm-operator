@@ -21,7 +21,8 @@ type Runnable interface {
 }
 
 type HealthCheck interface {
-	LiveNess(client.Client) bool
+	IsReady(client.Client) bool
+	IsHealthy(client.Client) bool
 }
 
 //

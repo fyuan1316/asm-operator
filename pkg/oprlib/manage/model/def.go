@@ -7,10 +7,12 @@ import (
 )
 
 type OperatorManage struct {
-	K8sClient   client.Client
-	CR          Object
-	Scheme      *runtime.Scheme
-	FinalizerID string
+	K8sClient client.Client
+	CR        Object
+	//Scheme        *runtime.Scheme
+	//FinalizerID   string
+	//statusUpdater func(obj Object, client client.Client) func(isReady, isHealthy bool) error
+	Options *OperatorOptions
 }
 
 type Object interface {

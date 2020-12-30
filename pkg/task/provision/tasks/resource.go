@@ -7,16 +7,24 @@ import (
 	resource2 "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
 	"github.com/fyuan1316/asm-operator/pkg/task"
 	"github.com/fyuan1316/asm-operator/pkg/task/data"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ProvisionResourcesTask struct {
 	*resource.Task
 }
 
+func (p ProvisionResourcesTask) IsReady(client client.Client) bool {
+	return true
+}
+
+func (p ProvisionResourcesTask) IsHealthy(client client.Client) bool {
+	return false
+}
+
 var ProvisionResources ProvisionResourcesTask
 var _ model.OverrideOperation = ProvisionResourcesTask{}
-
-//var _ model.ExecuteItem = ProvisionResourcesTask{}
+var _ model.HealthCheck = ProvisionResourcesTask{}
 
 // 子类需要实现的接口，可以统一合并为一个大的接口定义。
 func (p ProvisionResourcesTask) GetOperation() model.OperationType {
@@ -26,12 +34,6 @@ func (p ProvisionResourcesTask) GetOperation() model.OperationType {
 func (p ProvisionResourcesTask) GetStageName() string {
 	return task.StageProvision
 }
-
-//func (p ProvisionResourcesTask) Run(om *model.OperatorManage) error {
-//	fmt.Println("ProvisionCrdsTask Run")
-//	err := p.Sync(om)
-//	return err
-//}
 
 var ClusterAsmResDir = "pkg/task/provision/cluster-asm/resources"
 
@@ -43,7 +45,6 @@ func SetUpResource() {
 			//ResourceMappings:
 		},
 	}
-	//ProvisionResources.implementor = ProvisionResources
 	ProvisionResources.Override(ProvisionResources)
 	files, err := resource2.GetFilesInFolder(ClusterAsmResDir, resource2.Suffix(".yaml"))
 	if err != nil {

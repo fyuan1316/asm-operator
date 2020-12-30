@@ -34,9 +34,10 @@ type AsmSpec struct {
 type AsmState string
 
 var AsmStates = struct {
+	NotReady AsmState
+	Ready    AsmState
 	Health   AsmState
-	UnHealth AsmState
-}{"Health", "UnHealth"}
+}{"NotReady", "Ready", "Health"}
 
 // AsmStatus defines the observed state of Asm
 type AsmStatus struct {

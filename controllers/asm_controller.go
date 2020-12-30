@@ -20,8 +20,8 @@ import (
 	"context"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/options"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
+	pkgerrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
@@ -72,12 +72,13 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
-
-	mgr = manage.NewOperatorManage(
-		r.Client, instance,
-		options.SetScheme(r.Scheme),
-		options.SetFinalizer(finalizerID))
 	once.Do(func() {
+		mgr = manage.NewOperatorManage(
+			r.Client, instance,
+			model.SetScheme(r.Scheme),
+			model.SetFinalizer(finalizerID),
+			model.SetStatusUpdater(asmOperatorStatusUpdate))
+
 		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})
 	result, err := mgr.Reconcile(provisionTasks, deletionTasks)
@@ -86,6 +87,23 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	return result, nil
+}
+
+var asmOperatorStatusUpdate = func(obj model.Object, client client.Client) func(isReady, isHealthy bool) error {
+	return func(isReady, isHealthy bool) error {
+		var asm *operatorv1alpha1.Asm
+		var ok bool
+		if asm, ok = obj.(*operatorv1alpha1.Asm); !ok {
+			return pkgerrors.New("asmOperatorStatusUpdate cast model.Object to operatorv1alpha1.Asm error")
+		}
+		asmCopy := asm.DeepCopy()
+		asmCopy.Status.SetState(isReady, isHealthy)
+		if updErr := client.Status().Update(context.Background(), asmCopy); updErr != nil {
+			return updErr
+		}
+		return nil
+	}
+
 }
 
 func (r *AsmReconciler) SetupWithManager(mgr ctrl.Manager) error {

@@ -14,9 +14,9 @@ var (
 )
 
 func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteItem) (ctrl.Result, error) {
-	if m.FinalizerID != "" && m.CR.GetDeletionTimestamp().IsZero() {
-		if !ContainsString(m.CR.GetFinalizers(), m.FinalizerID) {
-			finalizers := append(m.CR.GetFinalizers(), m.FinalizerID)
+	if m.Options.FinalizerID != "" && m.CR.GetDeletionTimestamp().IsZero() {
+		if !ContainsString(m.CR.GetFinalizers(), m.Options.FinalizerID) {
+			finalizers := append(m.CR.GetFinalizers(), m.Options.FinalizerID)
 			m.CR.SetFinalizers(finalizers)
 			if err := m.K8sClient.Update(context.Background(), m.CR); err != nil {
 				return ctrl.Result{}, pkgerrors.Wrap(err, "could not add finalizer to config")
@@ -31,7 +31,7 @@ func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteIt
 				return ctrl.Result{}, err
 			}
 		}
-		f := RemoveString(m.CR.GetFinalizers(), m.FinalizerID)
+		f := RemoveString(m.CR.GetFinalizers(), m.Options.FinalizerID)
 		m.CR.SetFinalizers(f)
 		if err := m.K8sClient.Update(context.Background(), m.CR); err != nil {
 			return reconcile.Result{}, pkgerrors.Wrap(err, "could not remove finalizer from config")
@@ -45,31 +45,36 @@ func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteIt
 	if err := m.ProcessStages(provisionStages); err != nil {
 		return ctrl.Result{}, err
 	}
-	if err := m.HealthCheck(provisionStages); err != nil {
+	if err := m.DoHealthCheck(provisionStages); err != nil {
 		return ctrl.Result{}, err
 	}
 	return ctrl.Result{}, nil
 
 }
 
-func (m *OperatorManage) HealthCheck(stages [][]ExecuteItem) error {
-	var (
-		total, success int
-	)
+func (m *OperatorManage) DoHealthCheck(stages [][]ExecuteItem) error {
+	var readyCheckNum, readyNum, healthyCheckNum, healthyNum int
 	for _, items := range stages {
 		for _, item := range items {
 			if ref, ok := CanDoHealthCheck(item); ok {
 				logger.Debugf("run HealthCheck")
-				total += 1
-				if ref.LiveNess(m.K8sClient) {
-					success += 1
+				readyCheckNum += 1
+				if ref.IsReady(m.K8sClient) {
+					readyNum += 1
+				}
+				healthyCheckNum += 1
+				if ref.IsHealthy(m.K8sClient) {
+					healthyNum += 1
 				}
 			}
 		}
 	}
-	if success == total {
-		//aa:= m.Object(v1alpha1.AsmSpec)
-		m.K8sClient.Status().Update(context.Background(), m.CR.DeepCopyObject())
+	// if some task needs report its states, we update operator cr's status.state
+	if readyCheckNum > 0 {
+		if err := m.Options.StatusUpdater(m.CR, m.K8sClient)(readyCheckNum == readyNum, healthyCheckNum == healthyNum); err != nil {
+			return err
+		}
+		return nil
 	}
 	return nil
 }
