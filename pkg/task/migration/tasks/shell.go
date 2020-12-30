@@ -27,10 +27,13 @@ func SetUpMigShell() {
 	if err != nil {
 		panic(err)
 	}
-	for _, file := range files {
-		err := ShellTasks.Load(file)
-		if err != nil {
-			panic(err)
-		}
+	if err = ShellTasks.LoadFiles(files); err != nil {
+		panic(err)
 	}
+	//for _, file := range files {
+	//	err := ShellTasks.Load(file)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//}
 }

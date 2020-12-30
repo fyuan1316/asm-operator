@@ -7,10 +7,14 @@ import (
 )
 
 type OperatorManage struct {
-	K8sClient   client.Client
-	CR          Object
-	Scheme      *runtime.Scheme
-	FinalizerID string
+	K8sClient client.Client
+	CR        Object
+	Options   *OperatorOptions
+	//TODO fy event
+}
+
+func (m *OperatorManage) GetEditableCR() runtime.Object {
+	return m.CR.DeepCopyObject()
 }
 
 type Object interface {

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
-	resource2 "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
 	"github.com/fyuan1316/asm-operator/pkg/task"
 	"github.com/fyuan1316/asm-operator/pkg/task/data"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -68,18 +67,24 @@ func SetUpCrds() {
 			TemplateValues: data.GetDefaults(),
 		},
 	}
-
-	files, err := resource2.GetFilesInFolder(ClusterAsmCrdDir, resource2.Suffix(".yaml"))
-	if err != nil {
-		panic(err)
-	}
-	for _, file := range files {
-		err := ProvisionCrds.LoadFile(
-			file,
-		)
+	//files from chart loader TODO fy
+	/*
+		files, err := resource2.GetFilesInFolder(ClusterAsmCrdDir, resource2.Suffix(".yaml"))
 		if err != nil {
 			panic(err)
 		}
+
+		for _, file := range files {
+			err := ProvisionCrds.LoadFile(
+				file,
+			)
+			if err != nil {
+				panic(err)
+			}
+		}
+	*/
+	if err := ProvisionCrds.LoadResources(loader.); err != nil {
+		panic(err)
 	}
 }
 

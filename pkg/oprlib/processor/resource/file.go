@@ -81,3 +81,52 @@ func (m *Task) Load(objectStr string, opts ...FileOption) error {
 		return err
 	}
 }
+
+func (m *Task) LoadResources(objectStrs map[string]string, opts ...FileOption) error {
+	var err error
+
+	//meta := manage.TypeObjectMeta{}
+	// render values TODO mergeDefaults
+	//renderedObjectStr, err := Parse(objectStr, m.TemplateValues)
+	//if err != nil {
+	//	return err
+	//}
+
+	for _, objectStr := range objectStrs {
+		unStruct := unstructured.Unstructured{}
+		err = yaml.Unmarshal([]byte(objectStr), &unStruct)
+		if err != nil {
+			return err
+		}
+		if &unStruct == nil {
+			fmt.Println()
+		}
+		if res, err := findResource(unStruct, m.ResourceMappings); err != nil {
+			return err
+		} else {
+			for _, opt := range opts {
+				opt(&res.FileInfo)
+			}
+
+			object := res.Object
+			err = yaml.Unmarshal([]byte(objectStr), object)
+			if err != nil {
+				return err
+			}
+			//TODO fy 按文件名顺序排序
+			objKey := fmt.Sprintf("%s-%s-%s-%s",
+				res.FilePath,
+				object.GetObjectKind().GroupVersionKind().Kind,
+				object.GetNamespace(),
+				object.GetName(),
+			)
+			if m.K8sResource == nil {
+				m.K8sResource = make(map[string]SyncResource)
+			}
+
+			m.K8sResource[objKey] = *res
+			return err
+		}
+	}
+	return nil
+}
