@@ -25,7 +25,7 @@ func (p ProvisionCrdsTask) GetStageName() string {
 	return task.StageProvision
 }
 
-func (p ProvisionCrdsTask) PreCheck(client client.Client) (pass bool, err error) {
+func (p ProvisionCrdsTask) PreCheck(client client.Client) (bool, error) {
 	var isExistsFn = func(name string) bool {
 		crd := apiextensionsv1.CustomResourceDefinition{}
 		if getErr := client.Get(context.Background(),
@@ -41,6 +41,7 @@ func (p ProvisionCrdsTask) PreCheck(client client.Client) (pass bool, err error)
 		"servicemonitors.monitoring.coreos.com",
 	}
 	var errs []error
+	var pass = true
 	for _, crd := range crdList {
 		if !isExistsFn(crd) {
 			pass = false

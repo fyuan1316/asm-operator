@@ -79,7 +79,7 @@ func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
 		for _, item := range items {
 			if ref, ok := CanDoPreCheck(item); ok {
 				logger.Debugf("run precheck")
-				if err := loopUntil(context.Background(), 5*time.Second, 10, ref.PreCheck, m.K8sClient); err != nil {
+				if err := loopUntil(context.Background(), 5*time.Second, 3, ref.PreCheck, m.K8sClient); err != nil {
 					return err
 				}
 			}
@@ -112,7 +112,7 @@ func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
 		for _, item := range items {
 			if ref, ok := CanDoPostCheck(item); ok {
 				logger.Debugf("run postcheck")
-				if err := loopUntil(context.Background(), 5*time.Second, 10, ref.PostCheck, m.K8sClient); err != nil {
+				if err := loopUntil(context.Background(), 5*time.Second, 3, ref.PostCheck, m.K8sClient); err != nil {
 					return err
 				}
 			}

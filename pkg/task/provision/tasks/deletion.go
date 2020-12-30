@@ -9,11 +9,11 @@ import (
 )
 
 type DeleteResourcesTask struct {
-	resource.Task
+	*resource.Task
 }
 
 var DeleteResources DeleteResourcesTask
-var _ model.Operation = DeleteResourcesTask{}
+var _ model.OverrideOperation = DeleteResourcesTask{}
 
 func (p DeleteResourcesTask) GetOperation() model.OperationType {
 	return model.Operations.Deletion
@@ -31,15 +31,19 @@ func (p DeleteResourcesTask) GetStageName() string {
 
 func SetUpDeletion() {
 	DeleteResources = DeleteResourcesTask{
-		resource.Task{
+		&resource.Task{
+			//加载任务values
 			TemplateValues: data.GetDefaults(),
+
 			// 增加自定义的mapping操作
 			//ResourceMappings:
+
+			//设置任务对应k8s资源的生命周期
 			KeepResourceAfterOperatorDeleted: resource.PointerFalse(),
 		},
 	}
-	DeleteResources.Implementor = DeleteResources
-
+	//DeleteResources.implementor = DeleteResources
+	DeleteResources.Override(DeleteResources)
 	files, err := resource2.GetFilesInFolder(ClusterAsmResDir, resource2.Suffix(".yaml"))
 	if err != nil {
 		panic(err)

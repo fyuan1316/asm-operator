@@ -76,8 +76,9 @@ var Operations = struct {
 	Deletion  OperationType
 }{"Provision", "Deletion"}
 
-type Operation interface {
+type OverrideOperation interface {
 	GetOperation() OperationType
+	Override(OverrideOperation)
 }
 
 //type TypeObjectMeta struct {
