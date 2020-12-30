@@ -6,14 +6,12 @@ import (
 )
 
 func GetStages() [][]model.ExecuteItem {
-	tasks := [][]model.ExecuteItem{
-		{
-			tasks.CustomCrdTask,
-		},
+	return [][]model.ExecuteItem{
+		//{
+		//	tasks.CustomCrdTask,
+		//},
 		{
 			tasks.ShellTasks,
 		},
 	}
-
-	return tasks
 }

@@ -13,7 +13,7 @@ import (
 func GetDeployStages() [][]model.ExecuteItem {
 	tasks := [][]model.ExecuteItem{
 		{
-			tasks2.ChangeCrdTask,
+			tasks2.CustomCrdTask,
 			PatchTask{},
 		},
 		{

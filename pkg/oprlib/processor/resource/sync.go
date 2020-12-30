@@ -19,7 +19,7 @@ var _ model.ExecuteItem = Task{}
 
 type Task struct {
 	//子类override 接口
-	Implementor model.Operation
+	implementor model.OverrideOperation
 
 	//资源mappings hook
 	ResourceMappings map[metav1.TypeMeta]*K8sResourceMapping
@@ -35,14 +35,20 @@ type Task struct {
 	TemplateValues map[string]interface{}
 }
 
+func (m *Task) Override(operation model.OverrideOperation) {
+	m.implementor = operation
+}
 func (m Task) GetStageName() string {
 	panic("implement me")
 }
+func (m Task) GetImplementor() model.OverrideOperation {
+	return m.implementor
+}
 
 func (m Task) Run(manage *model.OperatorManage) error {
-	if m.Implementor.GetOperation() == model.Operations.Provision {
+	if m.GetImplementor().GetOperation() == model.Operations.Provision {
 		return m.Sync(manage)
-	} else if m.Implementor.GetOperation() == model.Operations.Deletion {
+	} else if m.GetImplementor().GetOperation() == model.Operations.Deletion {
 		return m.Delete(manage)
 	} else {
 		return errors.New("UnSupport type of ResourceTask")

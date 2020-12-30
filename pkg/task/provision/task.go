@@ -6,7 +6,7 @@ import (
 )
 
 func GetStages() [][]model.ExecuteItem {
-	tasks := [][]model.ExecuteItem{
+	return [][]model.ExecuteItem{
 		{
 			tasks.ProvisionCrds,
 		},
@@ -14,15 +14,11 @@ func GetStages() [][]model.ExecuteItem {
 			tasks.ProvisionResources,
 		},
 	}
-
-	return tasks
 }
 func GetDeleteStages() [][]model.ExecuteItem {
-	tasks := [][]model.ExecuteItem{
+	return [][]model.ExecuteItem{
 		{
 			tasks.DeleteResources,
 		},
 	}
-
-	return tasks
 }

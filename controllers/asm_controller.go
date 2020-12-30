@@ -78,8 +78,7 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		options.SetScheme(r.Scheme),
 		options.SetFinalizer(finalizerID))
 	once.Do(func() {
-		provisionTasks = entry.GetDeployStages()
-		deletionTasks = entry.GetDeleteStages()
+		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})
 	result, err := mgr.Reconcile(provisionTasks, deletionTasks)
 	if err != nil {

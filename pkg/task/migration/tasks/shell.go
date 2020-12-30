@@ -1,12 +1,10 @@
 package tasks
 
 import (
-	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/shell"
 	resource2 "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
 	"github.com/fyuan1316/asm-operator/pkg/task"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ model.ExecuteItem = ShellTask{}
@@ -35,13 +33,4 @@ func SetUpMigShell() {
 			panic(err)
 		}
 	}
-}
-
-func (t ShellTask) PreRun(client client.Client) error {
-	fmt.Println("ShellTask prerun")
-
-	return nil
-}
-func (t ShellTask) Run(manage *model.OperatorManage) error {
-	return nil
 }

@@ -10,11 +10,11 @@ import (
 )
 
 type ProvisionResourcesTask struct {
-	resource.Task
+	*resource.Task
 }
 
 var ProvisionResources ProvisionResourcesTask
-var _ model.Operation = ProvisionResourcesTask{}
+var _ model.OverrideOperation = ProvisionResourcesTask{}
 
 //var _ model.ExecuteItem = ProvisionResourcesTask{}
 
@@ -37,14 +37,14 @@ var ClusterAsmResDir = "pkg/task/provision/cluster-asm/resources"
 
 func SetUpResource() {
 	ProvisionResources = ProvisionResourcesTask{
-		resource.Task{
+		&resource.Task{
 			TemplateValues: data.GetDefaults(),
 			// 增加自定义的mapping操作
 			//ResourceMappings:
 		},
 	}
-	ProvisionResources.Implementor = ProvisionResources
-
+	//ProvisionResources.implementor = ProvisionResources
+	ProvisionResources.Override(ProvisionResources)
 	files, err := resource2.GetFilesInFolder(ClusterAsmResDir, resource2.Suffix(".yaml"))
 	if err != nil {
 		panic(err)
