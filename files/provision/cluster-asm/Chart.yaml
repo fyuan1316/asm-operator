@@ -1,0 +1,15 @@
+apiVersion: v2
+description: Alauda Service Mesh
+name: cluster-asm
+version: v3.3.0-alpha.12
+kubeVersion: '>=1.9.0'
+metadata:
+  annotations:
+    chart.type: application
+  labels:
+    alauda.io/product: AlaudaServiceMesh
+    alauda.io/product.version: 0.9.0
+    alauda.io/chart.type: Application
+annotations:
+  branch: master
+  release: alpha

@@ -7,7 +7,6 @@ import (
 	tasks2 "github.com/fyuan1316/asm-operator/pkg/task/migration/tasks"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GetDeployStages() [][]model.ExecuteItem {
@@ -27,7 +26,7 @@ func GetDeployStages() [][]model.ExecuteItem {
 type PatchTask struct {
 }
 
-func (m PatchTask) GetStageName() string {
+func (m PatchTask) Name() string {
 	panic("implement me")
 }
 
@@ -35,9 +34,9 @@ func (m PatchTask) LiveNess() bool {
 	panic("implement me")
 }
 
-func (m PatchTask) Run(manage *model.OperatorManage) error {
+func (m PatchTask) Run(oCtx *model.OperatorContext) error {
 	fmt.Println("PatchTask Run")
-	client := manage.K8sClient
+	client := oCtx.K8sClient
 	ns := corev1.Namespace{}
 	err := client.Get(context.Background(), types.NamespacedName{Name: "default"}, &ns)
 	if err != nil {
@@ -55,22 +54,22 @@ func (m PatchTask) Run(manage *model.OperatorManage) error {
 
 var _ model.ExecuteItem = PatchTask{}
 
-func (m PatchTask) PreRun(client client.Client) error {
+func (m PatchTask) PreRun(oCtx *model.OperatorContext) error {
 	fmt.Println("PatchTask prerun")
 	return nil
 }
 
-func (m PatchTask) PostRun(client client.Client) error {
+func (m PatchTask) PostRun(oCtx *model.OperatorContext) error {
 	fmt.Println("PatchTask PostRun")
 	return nil
 }
 
-func (m PatchTask) PreCheck(client client.Client) (bool, error) {
+func (m PatchTask) PreCheck(oCtx *model.OperatorContext) (bool, error) {
 	fmt.Println("PatchTask PreCheck")
 	return true, nil
 }
 
-func (m PatchTask) PostCheck(client client.Client) (bool, error) {
+func (m PatchTask) PostCheck(oCtx *model.OperatorContext) (bool, error) {
 	fmt.Println("PatchTask PostCheck")
 	return true, nil
 }

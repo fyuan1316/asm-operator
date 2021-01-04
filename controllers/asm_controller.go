@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	asmerrors "github.com/fyuan1316/asm-operator/pkg/errors"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
@@ -26,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
 
@@ -43,6 +46,7 @@ type AsmReconciler struct {
 	Config        *rest.Config
 	Log           logr.Logger
 	Scheme        *runtime.Scheme
+	Recorder      record.EventRecorder
 }
 
 var once = sync.Once{}
@@ -58,12 +62,12 @@ const finalizerID = "asms.operator.alauda.io"
 
 func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var err error
-	_ = context.Background()
 	log := r.Log.WithValues("asm", req.NamespacedName)
-	_ = log
+	log.Info(fmt.Sprintf("Starting reconcile loop for %v", req.NamespacedName))
+	defer log.Info(fmt.Sprintf("Finish reconcile loop for %v", req.NamespacedName))
 
 	instance := &operatorv1alpha1.Asm{}
-	err = r.Get(context.TODO(), req.NamespacedName, instance)
+	err = r.Get(context.Background(), req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// CR not found, return.  Created objects are automatically garbage collected.
@@ -75,22 +79,25 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 	once.Do(func() {
 		mgr = manage.NewOperatorManage(
-			r.Client, instance,
+			r.Client,
 			model.SetScheme(r.Scheme),
+			model.SetRecorder(r.Recorder),
 			model.SetFinalizer(finalizerID),
-			model.SetStatusUpdater(asmOperatorStatusUpdate))
+			model.SetStatusUpdater(asmOperatorStatusUpdater))
 
 		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})
-	result, err := mgr.Reconcile(provisionTasks, deletionTasks)
+	result, err := mgr.Reconcile(instance, provisionTasks, deletionTasks)
 	if err != nil {
 		log.Error(err, "Reconcile err")
+		r.Recorder.Event(instance, asmerrors.WarningEvent, asmerrors.ReconcileError, err.Error())
+		return result, err
 	}
 
 	return result, nil
 }
 
-var asmOperatorStatusUpdate = func(obj runtime.Object, client client.Client) func(isReady, isHealthy bool) error {
+var asmOperatorStatusUpdater = func(obj runtime.Object, client client.Client) func(isReady, isHealthy bool) error {
 	return func(isReady, isHealthy bool) error {
 		var asm *operatorv1alpha1.Asm
 		var ok bool

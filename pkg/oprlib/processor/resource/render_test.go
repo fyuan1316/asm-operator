@@ -69,7 +69,7 @@ func GetDefaults() map[string]interface{} {
 }
 
 func Test_loadChart(t *testing.T) {
-	helmChartDirectory := "/Users/yuan/Dev/GolangProjects/charts/chart-cluster-asm-copy/chart"
+	helmChartDirectory := "/Users/yuan/Dev/GolangProjects/asm-operator/files/provision/cluster-asm"
 	valuesFilePath := helmChartDirectory + "/values.yaml"
 	var err error
 	refChart, err := loader.LoadDir(helmChartDirectory)
@@ -106,42 +106,4 @@ func Test_loadChart(t *testing.T) {
 
 	fmt.Println()
 
-	/*
-		//c, err := chartutil.Load(helmChartDirectory)
-		//if err != nil {
-		//	panic(err)
-		//}
-
-		config := &chart.Config{Raw: values, Values: map[string]*chart.Value{}}
-		options := chartutil.ReleaseOptions{
-			Name:      "istio",
-			Time:      timeconv.Now(),
-			Namespace: namespace,
-		}
-
-		vals, err := chartutil.ToRenderValues(c, config, options)
-		if err != nil {
-			panic(err)
-		}
-
-		files, err := engine.New().Render(c, vals)
-		if err != nil {
-			panic(err)
-		}
-
-		out := &bytes.Buffer{}
-		for name, data := range files {
-			if len(strings.TrimSpace(data)) == 0 {
-				continue
-			}
-			if _, err = fmt.Fprintf(out, "---\n# Source: %q\n", name); err != nil {
-				panic(err)
-			}
-			if _, err = fmt.Fprintln(out, data); err != nil {
-				panic(err)
-			}
-		}
-		fmt.Println(out.String())
-
-	*/
 }

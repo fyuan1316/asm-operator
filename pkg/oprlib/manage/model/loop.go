@@ -3,14 +3,13 @@ package model
 import (
 	"context"
 	"fmt"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 )
 
-func loopUntil(ctx context.Context, interval time.Duration, maxRetries int, f func(client.Client) (bool, error), client client.Client) error {
+func loopUntil(ctx context.Context, interval time.Duration, maxRetries int, f func(oCtx *OperatorContext) (bool, error), oCtx *OperatorContext) error {
 	count := 0
 	for {
-		if stop, err := f(client); err != nil {
+		if stop, err := f(oCtx); err != nil {
 			if count++; count > maxRetries {
 				return err
 			}

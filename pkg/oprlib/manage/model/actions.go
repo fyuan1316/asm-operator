@@ -1,28 +1,24 @@
 package model
 
-import (
-	"sigs.k8s.io/controller-runtime/pkg/client"
-)
-
 type PreRun interface {
-	PreRun(client.Client) error
+	PreRun(*OperatorContext) error
 }
 type PostRun interface {
-	PostRun(client.Client) error
+	PostRun(*OperatorContext) error
 }
 type PreCheck interface {
-	PreCheck(client.Client) (bool, error)
+	PreCheck(*OperatorContext) (bool, error)
 }
 type PostCheck interface {
-	PostCheck(client.Client) (bool, error)
+	PostCheck(*OperatorContext) (bool, error)
 }
 type Runnable interface {
-	Run(*OperatorManage) error
+	Run(*OperatorContext) error
 }
 
 type HealthCheck interface {
-	IsReady(client.Client) bool
-	IsHealthy(client.Client) bool
+	IsReady(*OperatorContext) bool
+	IsHealthy(*OperatorContext) bool
 }
 
 //
@@ -63,8 +59,18 @@ func CanDoRun(inf interface{}) (Runnable, bool) {
 	return nil, false
 }
 
+func IsChartTask(inf interface{}) (Chart, bool) {
+	if b, ok := inf.(Chart); ok {
+		return b, true
+	}
+	return nil, false
+}
+
+type Chart interface {
+	Reload(map[string]interface{}) error
+}
 type Item interface {
-	GetStageName() string
+	Name() string
 }
 type ExecuteItem interface {
 	Item
@@ -81,8 +87,3 @@ type OverrideOperation interface {
 	GetOperation() OperationType
 	Override(OverrideOperation)
 }
-
-//type TypeObjectMeta struct {
-//	metav1.TypeMeta
-//	metav1.Object
-//}

@@ -1,0 +1,119 @@
+global:
+  scheme: http
+  host: k8s.alauda.io
+  useNodePort: false
+  labelBaseDomain: alauda.io
+  registry:
+    address: harbor.alauda.cn
+  images:
+    jaeger_operator:
+      repository: asm/jaeger-operator
+      tag: 1.15.1
+      support_arm: true
+    jaeger_agent:
+      repository: asm/jaeger-agent
+      tag: 1.15.1
+      support_arm: true
+    jaeger_query:
+      repository: asm/jaeger-query
+      tag: aa4b623
+      code: gitlab-ce.alauda.cn/micro-service/alauda-jaeger
+      support_arm: true
+    jaeger_collector:
+      repository: asm/jaeger-collector
+      tag: "1.7"
+      support_arm: true
+    jaeger_es_index_cleaner:
+      repository: asm/asm-jaeger-es-index-cleaner
+      tag: aa4b623
+      code: gitlab-ce.alauda.cn/micro-service/alauda-jaeger
+      support_arm: true
+    asm_controller:
+      repository: asm/asm-controller
+      tag: 4b25735
+      code: gitlab-ce.alauda.cn/micro-service/asm-controller
+      support_arm: true
+    flagger:
+      repository: asm/flagger
+      tag: c235eee
+      code: gitlab-ce.alauda.cn/micro-service/flagger
+      support_arm: true
+    loadtester:
+      repository: asm/flagger-loadtester
+      tag: 0.16.0
+      support_arm: false
+  k8sIngressSelector: ingress
+  k8sIngressHttps: false
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+    - alaudak8s
+asm_controller:
+  resources:
+    limits:
+      cpu: 300m
+      memory: 300Mi
+    requests:
+      cpu: 300m
+      memory: 300Mi
+  imagepullPolicy: IfNotPresent
+  replicaCount: 1
+grafana:
+  url: https://asm.dev.com/grafana-asm-cluster1
+  basepath: /grafana-asm
+  tls: null
+  externalPort: 3000
+  nodePort: 30667
+prometheus:
+  url: ""
+  serviceMonitorLabels:
+    prometheus: kube-prometheus
+jaeger:
+  url: https://asm.dev.com/jaeger-asm-cluster1
+  query:
+    basepath: /jaeger-asm
+    replicas: 1
+  collector:
+    replicas: 1
+  elasticsearch:
+    indexprefix: asm
+    serverurl: http://es-elasticsearch-client.istio-system:9200
+    username: elastic
+    password: changeme
+    indexRetainsDays: 3
+  ui:
+    port: 16686
+    nodePort: 30668
+  nsZipkinCollector:
+    host: ns-zipkin
+    port: 9411
+  ingress:
+    enabled: true
+    hosts: null
+    annotations: null
+    tls: null
+  replicaCount: 1
+  zipkinService:
+    annotations: {}
+    portName: http
+    type: ClusterIP
+    externalPort: 9411
+    internalPort: 9411
+  resources:
+    limits:
+      cpu: 100m
+      memory: 300Mi
+    requests:
+      cpu: 100m
+      memory: 300Mi
+istio:
+  namespace: istio-system
+  traceSampling: 100
+  includeIPRanges: '*'
+  gatewayNodeportValue: 30666
+  gatewayHttpsNodeportValue: 30665
+flagger:
+  enabled: true
+  metricsServer: “”
+  selectorLabels: ""
+  crd:
+    create: true

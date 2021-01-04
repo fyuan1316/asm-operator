@@ -1,0 +1,11 @@
+apiVersion: operator.alauda.io/v1alpha1
+kind: Asm
+metadata:
+  name: asm-sample
+spec:
+  # Add fields here
+  parameters: |-
+    global:
+      images:
+        asm_controller:
+          tag: fy

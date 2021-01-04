@@ -82,8 +82,7 @@ func GetFilesInFolder(folderPath string, opts ...Option) (map[string]string, err
 	return namedFiles, nil
 }
 
-func GetChartResources(folderPath string) (map[string]string, error) {
-	//helmChartDirectory := "/Users/yuan/Dev/GolangProjects/charts/chart-cluster-asm-copy/chart"
+func GetChartResources(folderPath string, userValues map[string]interface{}) (map[string]string, error) {
 	var err error
 	helmChartDirectory := folderPath
 	valuesFilePath := helmChartDirectory + "/values.yaml"
@@ -97,6 +96,16 @@ func GetChartResources(folderPath string) (map[string]string, error) {
 	if bytes, err = ioutil.ReadFile(valuesFilePath); err != nil {
 		return nil, err
 	}
+	if values, err = chartutil.ReadValues(bytes); err != nil {
+		return nil, err
+	}
+	if len(userValues) > 0 {
+		fmt.Println("override values")
+		if values, err = chartutil.CoalesceValues(refChart, userValues); err != nil {
+			return nil, err
+		}
+	}
+
 	isUpgrade := false
 	options := chartutil.ReleaseOptions{
 		Name:      "asm-operator-test",
@@ -106,13 +115,11 @@ func GetChartResources(folderPath string) (map[string]string, error) {
 		IsUpgrade: isUpgrade,
 	}
 
-	if values, err = chartutil.ReadValues(bytes); err != nil {
-		return nil, err
-	}
 	valuesToRender, err := chartutil.ToRenderValues(refChart, values, options, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	var files map[string]string
 	if files, err = engine.Render(refChart, valuesToRender); err != nil {
 		return nil, err

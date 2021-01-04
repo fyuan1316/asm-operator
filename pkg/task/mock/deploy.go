@@ -7,14 +7,13 @@ import (
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource/sync"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type DeployTask struct {
-	resource.Task
+	resource.ChartTask
 }
 
-func (m DeployTask) GetStageName() string {
+func (m DeployTask) Name() string {
 	panic("implement me")
 }
 
@@ -110,29 +109,29 @@ func init() {
 
 var _ model.ExecuteItem = DeployTask{}
 
-func (m DeployTask) PreRun(client client.Client) error {
+func (m DeployTask) PreRun(oCtx *model.OperatorContext) error {
 	fmt.Println("DeployTask prerun")
 	return nil
 }
 
-func (m DeployTask) PostRun(client client.Client) error {
+func (m DeployTask) PostRun(oCtx *model.OperatorContext) error {
 	fmt.Println("DeployTask PostRun")
 	return nil
 }
 
-func (m DeployTask) PreCheck(client client.Client) (bool, error) {
+func (m DeployTask) PreCheck(oCtx *model.OperatorContext) (bool, error) {
 	fmt.Println("DeployTask PreCheck")
 	return true, nil
 }
 
-func (m DeployTask) PostCheck(client client.Client) (bool, error) {
+func (m DeployTask) PostCheck(oCtx *model.OperatorContext) (bool, error) {
 	fmt.Println("DeployTask PostCheck")
 	return true, nil
 }
 
-func (m DeployTask) Run(om *model.OperatorManage) error {
+func (m DeployTask) Run(oCtx *model.OperatorContext) error {
 	fmt.Println("DeployTask Run")
-	err := m.Sync(om)
+	err := m.Sync(oCtx)
 	return err
 }
 

@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: istio-monitor
+  namespace: {{ .Values.istio.namespace }}
+  labels:
+    heritage: {{ $.Release.Service }}
+    release: {{ $.Release.Name }}
+{{ toYaml .Values.prometheus.serviceMonitorLabels | indent 4 }}
+spec:
+  selector:
+    matchExpressions:
+    - key: istio
+      operator: In
+      values:
+      - pilot
+      - mixer
+      - galley
+      - citadel
+  namespaceSelector:
+    matchNames:
+      - istio-system
+  jobLabel: istio
+  endpoints:
+  - port: prometheus
+    interval: 5s
+  - port: http-monitoring
+    interval: 5s
+  - port: statsd-prom
+    interval: 5s

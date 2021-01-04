@@ -10,12 +10,12 @@ var (
 	logger = logging.RegisterScope("controller.oprlib")
 )
 
-func NewOperatorManage(client client.Client, cr model.Object, opts ...model.Option) *model.OperatorManage {
+func NewOperatorManage(client client.Client, opts ...model.Option) *model.OperatorManage {
 	oprOpts := &model.OperatorOptions{}
 	managerSpec := &model.OperatorManage{
 		K8sClient: client,
-		CR:        cr,
-		Options:   oprOpts,
+		//CR:        cr,
+		Options: oprOpts,
 	}
 	for _, opt := range opts {
 		opt(oprOpts)
