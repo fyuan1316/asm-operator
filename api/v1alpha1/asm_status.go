@@ -1,18 +1,20 @@
 package v1alpha1
 
-func (in *AsmStatus) setState(state AsmState) {
+import "github.com/fyuan1316/asm-operator/pkg/oprlib/api"
+
+func (in *AsmStatus) setState(state api.OperatorState) {
 	in.State = state
 }
 
 func (in *AsmStatus) SetState(isReady, isHealthy bool) {
 	if isHealthy {
-		in.setState(AsmStates.Health)
+		in.setState(api.OperatorStates.Health)
 		return
 	}
 	if isReady {
-		in.setState(AsmStates.Ready)
+		in.setState(api.OperatorStates.Ready)
 		return
 	}
-	in.setState(AsmStates.NotReady)
+	in.setState(api.OperatorStates.NotReady)
 	return
 }

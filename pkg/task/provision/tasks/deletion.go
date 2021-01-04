@@ -1,15 +1,15 @@
 package tasks
 
 import (
+	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
 	resource2 "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
 	"github.com/fyuan1316/asm-operator/pkg/task"
-	"github.com/fyuan1316/asm-operator/pkg/task/data"
 )
 
 type DeleteResourcesTask struct {
-	*resource.Task
+	*resource.ChartTask
 }
 
 var DeleteResources DeleteResourcesTask
@@ -19,7 +19,7 @@ func (p DeleteResourcesTask) GetOperation() model.OperationType {
 	return model.Operations.Deletion
 }
 
-func (p DeleteResourcesTask) GetStageName() string {
+func (p DeleteResourcesTask) Name() string {
 	return task.StageDeletion
 }
 
@@ -31,27 +31,33 @@ func (p DeleteResourcesTask) GetStageName() string {
 
 func SetUpDeletion() {
 	DeleteResources = DeleteResourcesTask{
-		&resource.Task{
-			//加载任务values
-			TemplateValues: data.GetDefaults(),
+		&resource.ChartTask{
+			ChartDir: ClusterAsmResDir,
+			FileTask: resource.FileTask{
+				//加载任务values
+				//TemplateValues: data.GetDefaults(),
 
-			// 增加自定义的mapping操作
-			//ResourceMappings:
+				// 增加自定义的mapping操作
+				//ResourceMappings:
 
-			//设置任务对应k8s资源的生命周期
-			KeepResourceAfterOperatorDeleted: resource.PointerFalse(),
+				//设置任务对应k8s资源的生命周期
+				KeepResourceAfterOperatorDeleted: resource.PointerFalse(),
+			},
 		},
 	}
 	//DeleteResources.implementor = DeleteResources
 	DeleteResources.Override(DeleteResources)
-	files, err := resource2.GetFilesInFolder(ClusterAsmResDir, resource2.Suffix(".yaml"))
-	if err != nil {
+
+	var (
+		files map[string]string
+		err   error
+	)
+	if files, err = resource2.GetChartResources(ClusterAsmResDir, nil); err != nil {
 		panic(err)
 	}
-	for _, file := range files {
-		err := DeleteResources.LoadFile(file)
-		if err != nil {
-			panic(err)
-		}
+	if err = DeleteResources.LoadResources(files); err != nil {
+		panic(err)
 	}
+	fmt.Println()
+
 }

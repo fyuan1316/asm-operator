@@ -1,131 +1,105 @@
 package resource
 
 import (
-	"fmt"
-	"io/ioutil"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"sigs.k8s.io/yaml"
+	"errors"
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type FileInfo struct {
-	FilePath         string
-	ChargeByOperator *bool
+func PointerTrue() *bool {
+	var t = true
+	return &t
+}
+func PointerFalse() *bool {
+	var t = false
+	return &t
 }
 
-type FileOption func(spec *FileInfo)
+var _ model.ExecuteItem = FileTask{}
 
-func SetFilePath(path string) FileOption {
-	return func(spec *FileInfo) {
-		spec.FilePath = path
-	}
+type FileTask struct {
+	//子类override 接口
+	implementor model.OverrideOperation
+
+	//资源mappings hook
+	ResourceMappings map[metav1.TypeMeta]*K8sResourceMapping
+
+	//ResourceOptions  map[string]YamlResource
+	//归属任务的资源集
+	K8sResource map[string]SyncResource
+
+	//任务层面资源是否随operator删除的设定
+	KeepResourceAfterOperatorDeleted *bool
+
+	//任务级别的values数据，一般对应到一个chart的values
+	//TemplateValues map[string]interface{}
+
 }
-func KeepResourceAfterOperatorDeleted() FileOption {
-	return func(spec *FileInfo) {
-		b := true
-		spec.ChargeByOperator = &b
-	}
+
+func (m *FileTask) Override(operation model.OverrideOperation) {
+	m.implementor = operation
+}
+func (m FileTask) Name() string {
+	panic("implement me")
+}
+func (m FileTask) GetImplementor() model.OverrideOperation {
+	return m.implementor
 }
 
-func (m *Task) LoadFile(filePath string, opts ...FileOption) error {
-	//execution order by fileName order
-	opts = append(opts, SetFilePath(filePath))
+func (m FileTask) Run(ctx *model.OperatorContext) error {
 
-	bytes, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-	return m.Load(string(bytes), opts...)
-}
-func (m *Task) Load(objectStr string, opts ...FileOption) error {
-	var err error
-
-	//meta := manage.TypeObjectMeta{}
-	// render values TODO mergeDefaults
-	renderedObjectStr, err := Parse(objectStr, m.TemplateValues)
-	if err != nil {
-		return err
-	}
-	unStruct := unstructured.Unstructured{}
-	err = yaml.Unmarshal([]byte(renderedObjectStr), &unStruct)
-
-	if err != nil {
-		return err
-	}
-	if &unStruct == nil {
-		fmt.Println()
-	}
-	if res, err := findResource(unStruct, m.ResourceMappings); err != nil {
-		return err
+	if m.GetImplementor().GetOperation() == model.Operations.Provision {
+		return m.Sync(ctx)
+	} else if m.GetImplementor().GetOperation() == model.Operations.Deletion {
+		return m.Delete(ctx)
 	} else {
-		for _, opt := range opts {
-			opt(&res.FileInfo)
-		}
-
-		object := res.Object
-		err = yaml.Unmarshal([]byte(renderedObjectStr), object)
-		if err != nil {
-			return err
-		}
-		//TODO fy 按文件名顺序排序
-		objKey := fmt.Sprintf("%s-%s-%s-%s",
-			res.FilePath,
-			object.GetObjectKind().GroupVersionKind().Kind,
-			object.GetNamespace(),
-			object.GetName(),
-		)
-		if m.K8sResource == nil {
-			m.K8sResource = make(map[string]SyncResource)
-		}
-
-		m.K8sResource[objKey] = *res
-		return err
+		return errors.New("UnSupport type of ResourceTask")
 	}
 }
 
-func (m *Task) LoadResources(objectStrs map[string]string, opts ...FileOption) error {
-	var err error
+type SyncResource struct {
+	FileInfo
+	model.Object
+	Sync   SyncFunction
+	Delete SyncFunction
+}
 
-	//meta := manage.TypeObjectMeta{}
-	// render values TODO mergeDefaults
-	//renderedObjectStr, err := Parse(objectStr, m.TemplateValues)
-	//if err != nil {
-	//	return err
-	//}
+func NewSyncResource(resMapping *K8sResourceMapping) *SyncResource {
+	res := &SyncResource{FileInfo: FileInfo{}}
+	res.Object = resMapping.ObjectGenerator()
+	res.Sync = resMapping.Sync
+	res.Delete = resMapping.Deletion
+	return res
+}
 
-	for _, objectStr := range objectStrs {
-		unStruct := unstructured.Unstructured{}
-		err = yaml.Unmarshal([]byte(objectStr), &unStruct)
-		if err != nil {
+func (m *SyncResource) SetObject(o model.Object) {
+	m.Object = o
+}
+func (m *SyncResource) SetOwnerRef() {
+	t := true
+	m.ChargeByOperator = &t
+}
+func (m *SyncResource) IsChargedByOwnerRef() *bool {
+	return m.ChargeByOperator
+}
+
+func (m *FileTask) Sync(ctx *model.OperatorContext) error {
+	for _, res := range m.K8sResource {
+		if err := res.Sync(ctx.K8sClient, res.Object); err != nil {
 			return err
 		}
-		if &unStruct == nil {
-			fmt.Println()
-		}
-		if res, err := findResource(unStruct, m.ResourceMappings); err != nil {
-			return err
-		} else {
-			for _, opt := range opts {
-				opt(&res.FileInfo)
-			}
+	}
+	return nil
+}
 
-			object := res.Object
-			err = yaml.Unmarshal([]byte(objectStr), object)
-			if err != nil {
+func (m *FileTask) Delete(ctx *model.OperatorContext) error {
+	for _, res := range m.K8sResource {
+		//资源参数优先
+		if res.IsChargedByOwnerRef() != nil && *res.IsChargedByOwnerRef() ||
+			m.KeepResourceAfterOperatorDeleted != nil && !*m.KeepResourceAfterOperatorDeleted {
+			if err := res.Delete(ctx.K8sClient, res.Object); err != nil {
 				return err
 			}
-			//TODO fy 按文件名顺序排序
-			objKey := fmt.Sprintf("%s-%s-%s-%s",
-				res.FilePath,
-				object.GetObjectKind().GroupVersionKind().Kind,
-				object.GetNamespace(),
-				object.GetName(),
-			)
-			if m.K8sResource == nil {
-				m.K8sResource = make(map[string]SyncResource)
-			}
-
-			m.K8sResource[objKey] = *res
-			return err
 		}
 	}
 	return nil

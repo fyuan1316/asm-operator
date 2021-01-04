@@ -88,8 +88,9 @@ func main() {
 		Client:        mgr.GetClient(),
 		DynamicClient: dynamicClient,
 		Config:        mgr.GetConfig(),
-		Log:           ctrl.Log.WithName("controllers").WithName("Asm"),
+		Log:           ctrl.Log.WithName("asm-operator").WithName("Asm"),
 		Scheme:        mgr.GetScheme(),
+		Recorder:      mgr.GetEventRecorderFor("asm-operator"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Asm")
 		os.Exit(1)

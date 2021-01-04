@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
 
@@ -78,7 +77,7 @@ var _ model.PostCheck = ScriptManager{}
 var _ model.PreRun = ScriptManager{}
 var _ model.PostRun = ScriptManager{}
 
-func (s ScriptManager) GetStageName() string {
+func (s ScriptManager) Name() string {
 	panic("implement me")
 }
 func (s ScriptManager) runScripts(filePaths []string) error {
@@ -89,7 +88,7 @@ func (s ScriptManager) runScripts(filePaths []string) error {
 	}
 	return nil
 }
-func (s ScriptManager) PreCheck(client client.Client) (bool, error) {
+func (s ScriptManager) PreCheck(oCtx *model.OperatorContext) (bool, error) {
 	if len(s.preCheck) == 0 {
 		return true, nil
 	}
@@ -98,7 +97,7 @@ func (s ScriptManager) PreCheck(client client.Client) (bool, error) {
 	}
 	return true, nil
 }
-func (s ScriptManager) PostCheck(c client.Client) (bool, error) {
+func (s ScriptManager) PostCheck(oCtx *model.OperatorContext) (bool, error) {
 	if len(s.postCheck) == 0 {
 		return true, nil
 	}
@@ -108,19 +107,19 @@ func (s ScriptManager) PostCheck(c client.Client) (bool, error) {
 	return true, nil
 }
 
-func (s ScriptManager) Run(manage *model.OperatorManage) error {
+func (s ScriptManager) Run(oCtx *model.OperatorContext) error {
 	if len(s.run) == 0 {
 		return nil
 	}
 	return s.runScripts(s.run)
 }
-func (s ScriptManager) PreRun(c client.Client) error {
+func (s ScriptManager) PreRun(oCtx *model.OperatorContext) error {
 	if len(s.preRun) == 0 {
 		return nil
 	}
 	return s.runScripts(s.preRun)
 }
-func (s ScriptManager) PostRun(c client.Client) error {
+func (s ScriptManager) PostRun(oCtx *model.OperatorContext) error {
 	if len(s.postRun) == 0 {
 		return nil
 	}

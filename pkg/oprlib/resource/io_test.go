@@ -5,6 +5,12 @@ import (
 	"testing"
 )
 
+/*
+import (
+	"reflect"
+	"testing"
+)
+
 func TestGetResourceFiles(t *testing.T) {
 	type args struct {
 		folderPath string
@@ -35,6 +41,45 @@ func TestGetResourceFiles(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetFilesInFolder() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+*/
+
+func TestGetChartResources(t *testing.T) {
+	type args struct {
+		folderPath string
+		userValues map[string]interface{}
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr bool
+	}{
+		{
+			name: "test-merge-values",
+			args: args{
+				folderPath: "/Users/yuan/Dev/work/GolangProjects/asm-operator/files/provision/cluster-asm",
+				userValues: map[string]interface{}{
+					"asm_controller": map[string]interface{}{
+						"replicaCount": 2,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetChartResources(tt.args.folderPath, tt.args.userValues)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetChartResources() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetChartResources() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

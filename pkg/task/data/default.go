@@ -1,5 +1,6 @@
 package data
 
+/*
 import "github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
 
 func GetDefaults() map[string]interface{} {
@@ -60,3 +61,4 @@ func GetDefaults() map[string]interface{} {
 
 	return values
 }
+*/

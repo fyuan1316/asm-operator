@@ -6,28 +6,27 @@ import (
 	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/oprlib/processor/resource"
+	resource2 "github.com/fyuan1316/asm-operator/pkg/oprlib/resource"
 	"github.com/fyuan1316/asm-operator/pkg/task"
-	"github.com/fyuan1316/asm-operator/pkg/task/data"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ProvisionCrdsTask struct {
-	resource.Task
+	resource.FileTask
 }
 
-func (p ProvisionCrdsTask) GetStageName() string {
+func (p ProvisionCrdsTask) Name() string {
 	return task.StageProvision
 }
 
-func (p ProvisionCrdsTask) PreCheck(client client.Client) (bool, error) {
+func (p ProvisionCrdsTask) PreCheck(oCtx *model.OperatorContext) (bool, error) {
 	var isExistsFn = func(name string) bool {
 		crd := apiextensionsv1.CustomResourceDefinition{}
-		if getErr := client.Get(context.Background(),
+		if getErr := oCtx.K8sClient.Get(context.Background(),
 			types.NamespacedName{Name: name},
 			&crd,
 		); getErr != nil && apierrors.IsNotFound(getErr) {
@@ -51,40 +50,34 @@ func (p ProvisionCrdsTask) PreCheck(client client.Client) (bool, error) {
 	return pass, utilerrors.NewAggregate(errs)
 }
 
-func (p ProvisionCrdsTask) Run(om *model.OperatorManage) error {
+func (p ProvisionCrdsTask) Run(ctx *model.OperatorContext) error {
 	fmt.Println("ProvisionCrdsTask Run")
-	err := p.Sync(om)
+	err := p.Sync(ctx)
 	return err
 }
 
 var ProvisionCrds ProvisionCrdsTask
 
-var ClusterAsmCrdDir = "pkg/task/provision/cluster-asm/crds"
+var ClusterAsmCrdDir = "files/provision/crds"
 
 func SetUpCrds() {
 	ProvisionCrds = ProvisionCrdsTask{
-		Task: resource.Task{
-			TemplateValues: data.GetDefaults(),
+		FileTask: resource.FileTask{
+			//TemplateValues: data.GetDefaults(),
 		},
 	}
-	//files from chart loader TODO fy
-	/*
-		files, err := resource2.GetFilesInFolder(ClusterAsmCrdDir, resource2.Suffix(".yaml"))
+	files, err := resource2.GetFilesInFolder(ClusterAsmCrdDir, resource2.Suffix(".yaml"))
+	if err != nil {
+		panic(err)
+	}
+
+	for path := range files {
+		err := ProvisionCrds.LoadFile(
+			path,
+		)
 		if err != nil {
 			panic(err)
 		}
-
-		for _, file := range files {
-			err := ProvisionCrds.LoadFile(
-				file,
-			)
-			if err != nil {
-				panic(err)
-			}
-		}
-	*/
-	if err := ProvisionCrds.LoadResources(loader.); err != nil {
-		panic(err)
 	}
 }
 

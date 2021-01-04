@@ -11,7 +11,7 @@ type Task struct {
 }
 
 func (t *Task) Start() {
-	println("Task.Start()")
+	println("ChartTask.Start()")
 	// 复用父类代码
 	ticker := time.NewTicker(5 * time.Second)
 	for range ticker.C {
@@ -19,7 +19,7 @@ func (t *Task) Start() {
 	}
 }
 func (t *Task) Execute() {
-	println("Task.Execute()")
+	println("ChartTask.Execute()")
 }
 
 type CleanTask struct {

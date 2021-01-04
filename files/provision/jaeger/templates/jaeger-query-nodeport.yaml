@@ -1,0 +1,17 @@
+{{- if .Values.global.useNodePort -}}
+apiVersion: v1
+kind: Service
+metadata:
+    name: jaeger-query-nodeport
+    namespace: {{ .Values.istio.namespace }}
+spec:
+    ports:
+    - name: query
+      port: {{ .Values.jaeger.ui.port }}
+      targetPort: {{ .Values.jaeger.ui.port }}
+      nodePort: {{ .Values.jaeger.ui.nodePort }}
+    selector:
+        app: jaeger
+        app.kubernetes.io/component: query
+    type: NodePort
+{{- end -}}

@@ -25,6 +25,7 @@ FROM alpine
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/pkg ./pkg
+COPY files/ files/
 #USER nonroot:nonroot
 
 ENTRYPOINT ["/manager"]

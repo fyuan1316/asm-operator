@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/fyuan1316/asm-operator/pkg/oprlib/api"
+	"github.com/ghodss/yaml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,22 +30,24 @@ type AsmSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Asm. Edit Asm_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Parameters string `json:"parameters,omitempty"`
+	//api.OperatorParams
 }
-type AsmState string
 
-var AsmStates = struct {
-	NotReady AsmState
-	Ready    AsmState
-	Health   AsmState
-}{"NotReady", "Ready", "Health"}
+//type AsmState string
+//
+//var AsmStates = struct {
+//	NotReady AsmState
+//	Ready    AsmState
+//	Health   AsmState
+//}{"NotReady", "Ready", "Health"}
 
 // AsmStatus defines the observed state of Asm
 type AsmStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	State AsmState `json:"state,omitempty"`
+	//State api.OperatorState `json:"state,omitempty"`
+	api.OperatorStatus `json:",inline"`
 }
 
 // +kubebuilder:object:root=true
@@ -71,3 +75,22 @@ type AsmList struct {
 func init() {
 	SchemeBuilder.Register(&Asm{}, &AsmList{})
 }
+func (in Asm) GetOperatorParams() (map[string]interface{}, error) {
+	var m map[string]interface{}
+	if err := yaml.Unmarshal([]byte(in.Spec.Parameters), &m); err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+//func (in Asm) GetOperatorSpec() api.OperatorParams {
+//	return *in.Spec.OperatorParams
+//}
+//func (in *Asm) SetOperatorStatus(status *api.OperatorStatus) {
+//	in.Status.OperatorStatus = status
+//}
+//
+//func (in Asm) GetOperatorStatus() api.OperatorStatus {
+//	return *in.Status.OperatorStatus
+//}

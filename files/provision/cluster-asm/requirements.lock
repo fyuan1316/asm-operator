@@ -1,0 +1,6 @@
+dependencies:
+- name: flagger
+  repository: file://../flagger
+  version: 0.26.0
+digest: sha256:22f3af1ec1638cf6cfd4ed7c61fc3ec74e14da41a05d37d7a93821d3b3c969bc
+generated: "2020-04-28T13:40:30.626471+08:00"

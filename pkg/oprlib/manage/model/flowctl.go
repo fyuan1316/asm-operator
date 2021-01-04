@@ -13,29 +13,44 @@ var (
 	logger = logging.RegisterScope("controller.oprlib")
 )
 
-func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteItem) (ctrl.Result, error) {
-	if m.Options.FinalizerID != "" && m.CR.GetDeletionTimestamp().IsZero() {
-		if !ContainsString(m.CR.GetFinalizers(), m.Options.FinalizerID) {
-			finalizers := append(m.CR.GetFinalizers(), m.Options.FinalizerID)
-			m.CR.SetFinalizers(finalizers)
-			if err := m.K8sClient.Update(context.Background(), m.GetEditableCR()); err != nil {
+func (m *OperatorManage) Reconcile(instance CommonOperator, provisionStages, deletionStages [][]ExecuteItem) (ctrl.Result, error) {
+	var (
+		params map[string]interface{}
+		err    error
+	)
+	if params, err = instance.GetOperatorParams(); err != nil {
+		return ctrl.Result{}, pkgerrors.Wrap(err, "parse spec params error")
+	}
+	oCtx := OperatorContext{
+		K8sClient:      m.K8sClient,
+		Recorder:       m.Recorder,
+		Instance:       instance,
+		OperatorParams: params,
+	}
+
+	if m.Options.FinalizerID != "" && instance.GetDeletionTimestamp().IsZero() {
+		logger.Debug("sync cr")
+		if !ContainsString(instance.GetFinalizers(), m.Options.FinalizerID) {
+			finalizers := append(instance.GetFinalizers(), m.Options.FinalizerID)
+			instance.SetFinalizers(finalizers)
+			if err := m.K8sClient.Update(context.Background(), instance.DeepCopyObject()); err != nil {
 				return ctrl.Result{}, pkgerrors.Wrap(err, "could not add finalizer to config")
 			}
 			return ctrl.Result{
 				RequeueAfter: time.Second * 1,
 			}, nil
 		}
-	} else if !m.CR.GetDeletionTimestamp().IsZero() {
+	} else if !instance.GetDeletionTimestamp().IsZero() {
+		logger.Debug("delete cr")
 		if len(deletionStages) > 0 {
-			if err := m.ProcessStages(deletionStages); err != nil {
+			if err := m.ProcessStages(deletionStages, oCtx); err != nil {
 				return ctrl.Result{}, err
 			}
 		}
-		f := RemoveString(m.CR.GetFinalizers(), m.Options.FinalizerID)
-		m.CR.SetFinalizers(f)
-		logger.Info("---")
-		logger.Info(m.CR.GetFinalizers())
-		if err := m.K8sClient.Update(context.Background(), m.GetEditableCR()); err != nil {
+		f := RemoveString(instance.GetFinalizers(), m.Options.FinalizerID)
+		instance.SetFinalizers(f)
+		logger.Debugf("cr Finalizers=%v", instance.GetFinalizers())
+		if err := m.K8sClient.Update(context.Background(), instance.DeepCopyObject()); err != nil {
 			return reconcile.Result{}, pkgerrors.Wrap(err, "could not remove finalizer from config")
 		}
 		return ctrl.Result{}, nil
@@ -44,28 +59,33 @@ func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteIt
 		return ctrl.Result{}, nil
 	}
 	//sync
-	if err := m.ProcessStages(provisionStages); err != nil {
+	if err := m.ProcessStages(provisionStages, oCtx); err != nil {
 		return ctrl.Result{}, err
 	}
-	if err := m.DoHealthCheck(provisionStages); err != nil {
+	if err := m.DoHealthCheck(provisionStages, oCtx); err != nil {
 		return ctrl.Result{}, err
 	}
 	return ctrl.Result{}, nil
 
 }
 
-func (m *OperatorManage) DoHealthCheck(stages [][]ExecuteItem) error {
+func (m *OperatorManage) DoHealthCheck(stages [][]ExecuteItem, oCtx OperatorContext) error {
+	//oCtx := OperatorContext{
+	//	K8sClient:      m.K8sClient,
+	//	Recorder:       m.Recorder,
+	//	OperatorParams: instance.GetOperatorParams(),
+	//}
 	var readyCheckNum, readyNum, healthyCheckNum, healthyNum int
 	for _, items := range stages {
 		for _, item := range items {
 			if ref, ok := CanDoHealthCheck(item); ok {
 				logger.Debugf("run HealthCheck")
 				readyCheckNum += 1
-				if ref.IsReady(m.K8sClient) {
+				if ref.IsReady(&oCtx) {
 					readyNum += 1
 				}
 				healthyCheckNum += 1
-				if ref.IsHealthy(m.K8sClient) {
+				if ref.IsHealthy(&oCtx) {
 					healthyNum += 1
 				}
 			}
@@ -73,7 +93,7 @@ func (m *OperatorManage) DoHealthCheck(stages [][]ExecuteItem) error {
 	}
 	// if some task needs report its states, we update operator cr's status.state
 	if readyCheckNum > 0 {
-		if err := m.Options.StatusUpdater(m.GetEditableCR(), m.K8sClient)(readyCheckNum == readyNum, healthyCheckNum == healthyNum); err != nil {
+		if err := m.Options.StatusUpdater(oCtx.Instance.DeepCopyObject(), m.K8sClient)(readyCheckNum == readyNum, healthyCheckNum == healthyNum); err != nil {
 			return err
 		}
 		return nil
@@ -81,12 +101,23 @@ func (m *OperatorManage) DoHealthCheck(stages [][]ExecuteItem) error {
 	return nil
 }
 
-func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
+func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem, oCtx OperatorContext) error {
+
+	for _, items := range stages {
+		for _, item := range items {
+			if t, ok := IsChartTask(item); ok {
+				if err := t.Reload(oCtx.OperatorParams); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	for _, items := range stages {
 		for _, item := range items {
 			if ref, ok := CanDoPreCheck(item); ok {
 				logger.Debugf("run precheck")
-				if err := loopUntil(context.Background(), 5*time.Second, 3, ref.PreCheck, m.K8sClient); err != nil {
+				if err := loopUntil(context.Background(), 5*time.Second, 3, ref.PreCheck, &oCtx); err != nil {
 					return err
 				}
 			}
@@ -94,24 +125,24 @@ func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
 		for _, item := range items {
 			if ref, ok := CanDoPreRun(item); ok {
 				logger.Debugf("run prerun")
-				if err := ref.PreRun(m.K8sClient); err != nil {
+				if err := ref.PreRun(&oCtx); err != nil {
 					return err
 				}
 			}
 		}
 		for _, item := range items {
-			if ref, ok := CanDoRun(item); ok {
-				logger.Debugf("execute run")
-				if err := ref.Run(m); err != nil {
-					return err
-				}
+			//if ref, ok := CanDoRun(item); ok {
+			logger.Debugf("execute run")
+			if err := item.Run(&oCtx); err != nil {
+				return err
 			}
+			//}
 		}
 
 		for _, item := range items {
 			if ref, ok := CanDoPostRun(item); ok {
 				logger.Debugf("run postrun")
-				if err := ref.PostRun(m.K8sClient); err != nil {
+				if err := ref.PostRun(&oCtx); err != nil {
 					return err
 				}
 			}
@@ -119,7 +150,7 @@ func (m *OperatorManage) ProcessStages(stages [][]ExecuteItem) error {
 		for _, item := range items {
 			if ref, ok := CanDoPostCheck(item); ok {
 				logger.Debugf("run postcheck")
-				if err := loopUntil(context.Background(), 5*time.Second, 3, ref.PostCheck, m.K8sClient); err != nil {
+				if err := loopUntil(context.Background(), 5*time.Second, 3, ref.PostCheck, &oCtx); err != nil {
 					return err
 				}
 			}

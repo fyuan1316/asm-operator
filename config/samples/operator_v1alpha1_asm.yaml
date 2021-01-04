@@ -4,4 +4,8 @@ metadata:
   name: asm-sample
 spec:
   # Add fields here
-  foo: bar
+  parameters: |-
+    global:
+      images:
+        asm_controller:
+          tag: fy
