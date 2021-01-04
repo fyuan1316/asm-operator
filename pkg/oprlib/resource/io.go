@@ -83,7 +83,6 @@ func GetFilesInFolder(folderPath string, opts ...Option) (map[string]string, err
 }
 
 func GetChartResources(folderPath string, userValues map[string]interface{}) (map[string]string, error) {
-	//helmChartDirectory := "/Users/yuan/Dev/GolangProjects/charts/cluster-asm-cluster-asm-copy/cluster-asm"
 	var err error
 	helmChartDirectory := folderPath
 	valuesFilePath := helmChartDirectory + "/values.yaml"
@@ -107,7 +106,6 @@ func GetChartResources(folderPath string, userValues map[string]interface{}) (ma
 		}
 	}
 
-	fmt.Println(values)
 	isUpgrade := false
 	options := chartutil.ReleaseOptions{
 		Name:      "asm-operator-test",

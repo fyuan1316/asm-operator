@@ -5,12 +5,13 @@ import (
 )
 
 func Test_t1(t *testing.T) {
-	cleanTask := &CleanTask{
-		Task{},
-	}
-	cleanTask.executor = cleanTask // 实现hook函数的效果：由子类负责编写业务代码
-	cleanTask.Start()
-
+	/*
+		cleanTask := &CleanTask{
+			Task{},
+		}
+		cleanTask.executor = cleanTask // 实现hook函数的效果：由子类负责编写业务代码
+		cleanTask.Start()
+	*/
 }
 
 func Test_useDefaultProcess(t *testing.T) {
