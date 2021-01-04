@@ -23,6 +23,7 @@ import (
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
 	pkgerrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -89,7 +90,7 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return result, nil
 }
 
-var asmOperatorStatusUpdate = func(obj model.Object, client client.Client) func(isReady, isHealthy bool) error {
+var asmOperatorStatusUpdate = func(obj runtime.Object, client client.Client) func(isReady, isHealthy bool) error {
 	return func(isReady, isHealthy bool) error {
 		var asm *operatorv1alpha1.Asm
 		var ok bool
@@ -98,8 +99,29 @@ var asmOperatorStatusUpdate = func(obj model.Object, client client.Client) func(
 		}
 		asmCopy := asm.DeepCopy()
 		asmCopy.Status.SetState(isReady, isHealthy)
-		if updErr := client.Status().Update(context.Background(), asmCopy); updErr != nil {
-			return updErr
+		if asm.Status.State != asmCopy.Status.State {
+			if updErr := client.Status().Update(context.Background(), asmCopy); updErr != nil {
+				if errors.IsConflict(updErr) {
+					cur := &operatorv1alpha1.Asm{}
+					if err := client.Get(
+						context.Background(),
+						types.NamespacedName{
+							Namespace: asmCopy.GetNamespace(),
+							Name:      asmCopy.GetName(),
+						},
+						cur,
+					); err != nil {
+						return err
+					}
+					retryObj := cur.DeepCopy()
+					retryObj.Status.SetState(isReady, isHealthy)
+					if updErr2 := client.Status().Update(context.Background(), retryObj); updErr2 != nil {
+						return pkgerrors.Wrap(updErr2, "reUpdate AsmStatus error")
+					}
+					return nil
+				}
+				return pkgerrors.Wrap(updErr, "update AsmStatus error")
+			}
 		}
 		return nil
 	}

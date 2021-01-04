@@ -5,7 +5,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type StatusUpdaterFunc func(obj Object, client client.Client) func(isReady, isHealthy bool) error
+type StatusUpdaterFunc func(obj runtime.Object, client client.Client) func(isReady, isHealthy bool) error
 type Option func(spec *OperatorOptions)
 type OperatorOptions struct {
 	Scheme        *runtime.Scheme

@@ -13,11 +13,11 @@ func GetOperatorStages() ([][]model.ExecuteItem, [][]model.ExecuteItem) {
 }
 
 func getDeployStages() [][]model.ExecuteItem {
-	//stages contains migration and deploy TODO fy
-	//stages := append(migration.GetStages(), provision.GetStages()...)
+	//stages contains migration and deploy
+	stages := append(migration.GetStages(), provision.GetStages()...)
 
-	// 测试migration
-	stages := migration.GetStages()
+	// just test 测试migration
+	//stages := migration.GetStages()
 
 	return stages
 }

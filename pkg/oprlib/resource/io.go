@@ -1,9 +1,15 @@
 package resource
 
 import (
+	"fmt"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/engine"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 type Order string
@@ -35,12 +41,13 @@ func Suffix(s string) Option {
 	}
 }
 
-func GetFilesInFolder(folderPath string, opts ...Option) ([]string, error) {
+func GetFilesInFolder(folderPath string, opts ...Option) (map[string]string, error) {
 	resSpec := &ResSpec{Order: ResourceOrder.ASC}
 	for _, opt := range opts {
 		opt(resSpec)
 	}
 	var files []string
+	var namedFiles = make(map[string]string)
 	err := filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
 		if resSpec.Suffix != "" {
 			if filepath.Ext(path) != resSpec.Suffix {
@@ -64,5 +71,63 @@ func GetFilesInFolder(folderPath string, opts ...Option) ([]string, error) {
 			return !cmp
 		}
 	})
+	for _, path := range files {
+		if bytes, err := ioutil.ReadFile(path); err != nil {
+			return nil, err
+		} else {
+			namedFiles[path] = string(bytes)
+		}
+	}
+
+	return namedFiles, nil
+}
+
+func GetChartResources(folderPath string) (map[string]string, error) {
+	//helmChartDirectory := "/Users/yuan/Dev/GolangProjects/charts/chart-cluster-asm-copy/chart"
+	var err error
+	helmChartDirectory := folderPath
+	valuesFilePath := helmChartDirectory + "/values.yaml"
+
+	refChart, err := loader.LoadDir(helmChartDirectory)
+	if err != nil {
+		return nil, err
+	}
+	var bytes []byte
+	var values chartutil.Values
+	if bytes, err = ioutil.ReadFile(valuesFilePath); err != nil {
+		return nil, err
+	}
+	isUpgrade := false
+	options := chartutil.ReleaseOptions{
+		Name:      "asm-operator-test",
+		Namespace: "default",
+		Revision:  1,
+		IsInstall: !isUpgrade,
+		IsUpgrade: isUpgrade,
+	}
+
+	if values, err = chartutil.ReadValues(bytes); err != nil {
+		return nil, err
+	}
+	valuesToRender, err := chartutil.ToRenderValues(refChart, values, options, nil)
+	if err != nil {
+		return nil, err
+	}
+	var files map[string]string
+	if files, err = engine.Render(refChart, valuesToRender); err != nil {
+		return nil, err
+	}
+	resSep := "---"
+	for filePath, content := range files {
+		if strings.Contains(content, resSep) {
+			resInFile := strings.Split(content, resSep)
+			var key string
+			for i := range resInFile {
+				key = fmt.Sprintf("%s_%d", filePath, i)
+				files[key] = resInFile[i]
+			}
+			delete(files, filePath)
+		}
+	}
 	return files, nil
 }

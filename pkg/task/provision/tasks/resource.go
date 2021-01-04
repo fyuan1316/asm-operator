@@ -46,7 +46,9 @@ func SetUpResource() {
 		},
 	}
 	ProvisionResources.Override(ProvisionResources)
-	files, err := resource2.GetFilesInFolder(ClusterAsmResDir, resource2.Suffix(".yaml"))
+	//files, err := resource2.GetFilesInFolder(ClusterAsmResDir, resource2.Suffix(".yaml"))
+	test := "/Users/yuan/Dev/GolangProjects/charts/chart-cluster-asm-copy/chart"
+	files, err := resource2.GetChartResources(test)
 	if err != nil {
 		panic(err)
 	}

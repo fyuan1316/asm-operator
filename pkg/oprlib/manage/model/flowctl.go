@@ -18,7 +18,7 @@ func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteIt
 		if !ContainsString(m.CR.GetFinalizers(), m.Options.FinalizerID) {
 			finalizers := append(m.CR.GetFinalizers(), m.Options.FinalizerID)
 			m.CR.SetFinalizers(finalizers)
-			if err := m.K8sClient.Update(context.Background(), m.CR); err != nil {
+			if err := m.K8sClient.Update(context.Background(), m.GetEditableCR()); err != nil {
 				return ctrl.Result{}, pkgerrors.Wrap(err, "could not add finalizer to config")
 			}
 			return ctrl.Result{
@@ -33,7 +33,9 @@ func (m *OperatorManage) Reconcile(provisionStages, deletionStages [][]ExecuteIt
 		}
 		f := RemoveString(m.CR.GetFinalizers(), m.Options.FinalizerID)
 		m.CR.SetFinalizers(f)
-		if err := m.K8sClient.Update(context.Background(), m.CR); err != nil {
+		logger.Info("---")
+		logger.Info(m.CR.GetFinalizers())
+		if err := m.K8sClient.Update(context.Background(), m.GetEditableCR()); err != nil {
 			return reconcile.Result{}, pkgerrors.Wrap(err, "could not remove finalizer from config")
 		}
 		return ctrl.Result{}, nil
@@ -71,7 +73,7 @@ func (m *OperatorManage) DoHealthCheck(stages [][]ExecuteItem) error {
 	}
 	// if some task needs report its states, we update operator cr's status.state
 	if readyCheckNum > 0 {
-		if err := m.Options.StatusUpdater(m.CR, m.K8sClient)(readyCheckNum == readyNum, healthyCheckNum == healthyNum); err != nil {
+		if err := m.Options.StatusUpdater(m.GetEditableCR(), m.K8sClient)(readyCheckNum == readyNum, healthyCheckNum == healthyNum); err != nil {
 			return err
 		}
 		return nil

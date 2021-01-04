@@ -39,7 +39,14 @@ func (s Scripts) Execute(filePath string) (int, error) {
 func (s *ScriptManager) ensureExecutable(filePath string) error {
 	return os.Chmod(filePath, 0755)
 }
-
+func (s *ScriptManager) LoadFiles(files map[string]string) error {
+	for path := range files {
+		if err := s.Load(path); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 func (s *ScriptManager) Load(filePath string) error {
 	if err := s.ensureExecutable(filePath); err != nil {
 		return err
