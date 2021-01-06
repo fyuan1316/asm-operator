@@ -1,14 +1,13 @@
 package tasks
 
 import (
-	"fmt"
 	"github.com/fyuan1316/asm-operator/pkg/task"
 	"github.com/fyuan1316/operatorlib/manage/model"
 	"github.com/fyuan1316/operatorlib/task/chart"
 )
 
 type DeleteResourcesTask struct {
-	*chart.ChartTask2
+	*chart.ChartTask
 }
 
 var DeleteResources DeleteResourcesTask
@@ -24,12 +23,10 @@ func (p DeleteResourcesTask) Name() string {
 
 func SetUpDeletion() {
 	DeleteResources = DeleteResourcesTask{
-		&chart.ChartTask2{
+		&chart.ChartTask{
 			Dir: ClusterAsmResDir,
 		},
 	}
 	DeleteResources.Init()
 	DeleteResources.Override(DeleteResources)
-
-	fmt.Println()
 }

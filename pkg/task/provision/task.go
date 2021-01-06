@@ -7,9 +7,6 @@ import (
 
 func GetStages() [][]model.ExecuteItem {
 	return [][]model.ExecuteItem{
-		//{
-		//	tasks.ProvisionCrds,
-		//},
 		{
 			tasks.ProvisionResources,
 		},

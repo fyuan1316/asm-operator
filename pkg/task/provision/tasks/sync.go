@@ -7,7 +7,7 @@ import (
 )
 
 type ProvisionResourcesTask struct {
-	*chart.ChartTask2
+	*chart.ChartTask
 }
 
 var ProvisionResources ProvisionResourcesTask
@@ -34,7 +34,7 @@ var ClusterAsmResDir = "files/provision/cluster-asm"
 
 func SetUpResource() {
 	ProvisionResources = ProvisionResourcesTask{
-		&chart.ChartTask2{
+		&chart.ChartTask{
 			Dir: ClusterAsmResDir,
 		},
 	}

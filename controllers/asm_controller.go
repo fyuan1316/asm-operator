@@ -26,8 +26,6 @@ import (
 	pkgerrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
@@ -42,11 +40,11 @@ import (
 // AsmReconciler reconciles a Asm object
 type AsmReconciler struct {
 	client.Client
-	DynamicClient dynamic.Interface
-	Config        *rest.Config
-	Log           logr.Logger
-	Scheme        *runtime.Scheme
-	Recorder      record.EventRecorder
+	//DynamicClient dynamic.Interface
+	//Config        *rest.Config
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 var once = sync.Once{}

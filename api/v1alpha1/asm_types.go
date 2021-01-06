@@ -30,8 +30,8 @@ type AsmSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Parameters string `json:"parameters,omitempty"`
-	//api.OperatorParams
+	//Parameters string `json:"parameters,omitempty"`
+	api.OperatorSpec `json:",inline"`
 }
 
 //type AsmState string

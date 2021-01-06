@@ -25,7 +25,6 @@ import (
 	depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
 	"go.uber.org/zap/zapcore"
-	"k8s.io/client-go/dynamic"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -80,18 +79,18 @@ func main() {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
-	dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
-	if err != nil {
-		panic(err)
-	}
+	//dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	if err = (&controllers.AsmReconciler{
-		Client:        mgr.GetClient(),
-		DynamicClient: dynamicClient,
-		Config:        mgr.GetConfig(),
-		Log:           ctrl.Log.WithName("asm-operator").WithName("Asm"),
-		Scheme:        mgr.GetScheme(),
-		Recorder:      mgr.GetEventRecorderFor("asm-operator"),
+		Client: mgr.GetClient(),
+		//DynamicClient: dynamicClient,
+		//Config:        mgr.GetConfig(),
+		Log:      ctrl.Log.WithName("asm-operator").WithName("Asm"),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("asm-operator"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Asm")
 		os.Exit(1)
