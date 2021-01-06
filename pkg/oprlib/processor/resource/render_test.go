@@ -69,7 +69,7 @@ func GetDefaults() map[string]interface{} {
 }
 
 func Test_loadChart(t *testing.T) {
-	helmChartDirectory := "/Users/yuan/Dev/work/GolangProjects/asm-operator/files/provision/cluster-asm"
+	helmChartDirectory := "/Users/yuan/Dev/GolangProjects/asm-operator/files/provision/cluster-asm"
 	valuesFilePath := helmChartDirectory + "/values.yaml"
 	var err error
 	refChart, err := loader.LoadDir(helmChartDirectory)
