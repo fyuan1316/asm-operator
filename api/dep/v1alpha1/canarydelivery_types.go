@@ -115,7 +115,7 @@ type CanaryDeliverySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// TargetRef references a target resource
+	// TargetRef references a target chart
 	TargetRef flaggerv1beta1.CrossNamespaceObjectReference `json:"targetRef"`
 
 	// Analysis defines the validation process of a release

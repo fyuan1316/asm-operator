@@ -59,14 +59,14 @@ type CanaryTemplateSpec struct {
 	// +optional
 	MetricsServer string `json:"metricsServer,omitempty"`
 
-	// TargetRef references a target resource
+	// TargetRef references a target chart
 	TargetRef CrossNamespaceObjectReference `json:"targetRef"`
 
-	// AutoscalerRef references an autoscaling resource
+	// AutoscalerRef references an autoscaling chart
 	// +optional
 	AutoscalerRef *CrossNamespaceObjectReference `json:"autoscalerRef,omitempty"`
 
-	// Reference to NGINX ingress resource
+	// Reference to NGINX ingress chart
 	// +optional
 	IngressRef *CrossNamespaceObjectReference `json:"ingressRef,omitempty"`
 

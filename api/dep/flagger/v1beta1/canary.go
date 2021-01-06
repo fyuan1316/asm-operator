@@ -66,14 +66,14 @@ type CanarySpec struct {
 	// +optional
 	MetricsServer string `json:"metricsServer,omitempty"`
 
-	// TargetRef references a target resource
+	// TargetRef references a target chart
 	TargetRef CrossNamespaceObjectReference `json:"targetRef"`
 
-	// AutoscalerRef references an autoscaling resource
+	// AutoscalerRef references an autoscaling chart
 	// +optional
 	AutoscalerRef *CrossNamespaceObjectReference `json:"autoscalerRef,omitempty"`
 
-	// Reference to NGINX ingress resource
+	// Reference to NGINX ingress chart
 	// +optional
 	IngressRef *CrossNamespaceObjectReference `json:"ingressRef,omitempty"`
 
@@ -95,7 +95,7 @@ type CanarySpec struct {
 	// +optional
 	SkipAnalysis bool `json:"skipAnalysis,omitempty"`
 
-	// revert canary mutation on deletion of canary resource
+	// revert canary mutation on deletion of canary chart
 	// +optional
 	RevertOnDeletion bool `json:"revertOnDeletion,omitempty"`
 }

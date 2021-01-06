@@ -1,6 +1,6 @@
 package v1alpha1
 
-import "github.com/fyuan1316/asm-operator/pkg/oprlib/api"
+import "github.com/fyuan1316/operatorlib/api"
 
 func (in *AsmStatus) setState(state api.OperatorState) {
 	in.State = state

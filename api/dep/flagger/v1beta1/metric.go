@@ -49,7 +49,7 @@ type MetricTemplateList struct {
 	Items []MetricTemplate `json:"items"`
 }
 
-// MetricTemplateSpec is the spec for a metric template resource
+// MetricTemplateSpec is the spec for a metric template chart
 type MetricTemplateSpec struct {
 	// Provider of this metric
 	Provider MetricTemplateProvider `json:"provider,omitempty"`
@@ -58,7 +58,7 @@ type MetricTemplateSpec struct {
 	Query string `json:"query,omitempty"`
 }
 
-// MetricProvider is the spec for a MetricProvider resource
+// MetricProvider is the spec for a MetricProvider chart
 type MetricTemplateProvider struct {
 	// Type of provider
 	Type string `json:"type,omitempty"`

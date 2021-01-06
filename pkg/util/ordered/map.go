@@ -1,6 +1,6 @@
 package ordered
 
-import "github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
+import "github.com/fyuan1316/operatorlib/manage/model"
 
 type ObjectMap struct {
 	maps     map[string]model.Object

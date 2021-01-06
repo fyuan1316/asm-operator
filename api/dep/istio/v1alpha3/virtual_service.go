@@ -134,7 +134,7 @@ type VirtualServiceSpec struct {
 // registry. Istio's service registry is composed of all the services found
 // in the platform's service registry (e.g., Kubernetes services, Consul
 // services), as well as services declared through the
-// [ServiceEntry](#ServiceEntry) resource.
+// [ServiceEntry](#ServiceEntry) chart.
 //
 // *Note for Kubernetes users*: When short names are used (e.g. "reviews"
 // instead of "reviews.default.svc.cluster.local"), Istio will interpret
@@ -223,7 +223,7 @@ type VirtualServiceSpec struct {
 //
 // To control routing for traffic bound to services outside the mesh, external
 // services must first be added to Istio's internal service registry using the
-// ServiceEntry resource. VirtualServices can then be defined to control traffic
+// ServiceEntry chart. VirtualServices can then be defined to control traffic
 // bound to these external services. For example, the following rules define a
 // Service for wikipedia.org and set a timeout of 5s for http requests.
 //
@@ -327,7 +327,7 @@ type HTTPRoute struct {
 
 	// Cross-Origin Resource Sharing policy (CORS). Refer to
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-	// for further details about cross origin resource sharing.
+	// for further details about cross origin chart sharing.
 	CorsPolicy *CorsPolicy `json:"corsPolicy,omitempty"`
 
 	// Header manipulation rules
@@ -660,7 +660,7 @@ type HTTPRetry struct {
 // Describes the Cross-Origin Resource Sharing (CORS) policy, for a given
 // service. Refer to
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
-// for further details about cross origin resource sharing. For example,
+// for further details about cross origin chart sharing. For example,
 // the following rule restricts cross origin requests to those originating
 // from example.com domain using HTTP POST/GET, and sets the
 // Access-Control-Allow-Credentials header to false. In addition, it only
@@ -695,12 +695,12 @@ type CorsPolicy struct {
 	// header. Wildcard * will allow all origins.
 	AllowOrigin []string `json:"allowOrigin,omitempty"`
 
-	// List of HTTP methods allowed to access the resource. The content will
+	// List of HTTP methods allowed to access the chart. The content will
 	// be serialized into the Access-Control-Allow-Methods header.
 	AllowMethods []string `json:"allowMethods,omitempty"`
 
 	// List of HTTP headers that can be used when requesting the
-	// resource. Serialized to Access-Control-Allow-Methods header.
+	// chart. Serialized to Access-Control-Allow-Methods header.
 	AllowHeaders []string `json:"allowHeaders,omitempty"`
 
 	// A white list of HTTP headers that the browsers are allowed to

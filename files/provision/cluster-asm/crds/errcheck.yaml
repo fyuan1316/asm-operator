@@ -1,0 +1,81 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: (devel)
+  name: errorchecks.asm.alauda.io
+spec:
+  conversion:
+    strategy: None
+  group: asm.alauda.io
+  names:
+    kind: ErrorCheck
+    listKind: ErrorCheckList
+    plural: errorchecks
+    singular: errorcheck
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: ErrorCheck is the Schema for the errorchecks API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST chart this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: ErrorCheckSpec defines the desired state of ErrorCheck
+              properties:
+                errlist:
+                  items:
+                    properties:
+                      errorcode:
+                        type: string
+                      errordesc:
+                        type: string
+                      errorlevel:
+                        type: string
+                      relatename:
+                        type: string
+                      resourename:
+                        type: string
+                    type: object
+                  type: array
+              required:
+                - errlist
+              type: object
+            status:
+              description: ErrorCheckStatus defines the observed state of ErrorCheck
+              type: object
+          type: object
+      served: true
+      storage: true
+status:
+  acceptedNames:
+    kind: ErrorCheck
+    listKind: ErrorCheckList
+    plural: errorchecks
+    singular: errorcheck
+  conditions:
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: no conflicts found
+      reason: NoConflicts
+      status: "True"
+      type: NamesAccepted
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: the initial names have been accepted
+      reason: InitialNamesAccepted
+      status: "True"
+      type: Established
+  storedVersions:
+    - v1alpha1

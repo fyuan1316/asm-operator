@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/api"
+	"github.com/fyuan1316/operatorlib/api"
 	"github.com/ghodss/yaml"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -52,7 +52,7 @@ type AsmStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:chart:scope=Cluster
 
 // Asm is the Schema for the asms API
 type Asm struct {

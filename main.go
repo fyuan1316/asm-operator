@@ -24,6 +24,7 @@ import (
 	depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
 	depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
+	"go.uber.org/zap/zapcore"
 	"k8s.io/client-go/dynamic"
 	"os"
 
@@ -66,7 +67,7 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+	ctrl.SetLogger(zap.New(zap.UseDevMode(true), zap.Level(zapcore.DebugLevel)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
