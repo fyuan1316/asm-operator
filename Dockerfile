@@ -7,13 +7,16 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 # cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
-RUN go mod download
+ENV GOPROXY https://athens.alauda.cn
 
 # Copy the go source
 COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
 COPY pkg/ pkg/
+COPY local/ local/
+
+RUN go mod download
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
@@ -27,5 +30,6 @@ COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/pkg ./pkg
 COPY files/ files/
 #USER nonroot:nonroot
-
+COPY --from=alpine/k8s:1.14.9 /usr/bin/kubectl /usr/local/bin/kubectl
+RUN apk add --no-cache bash && rm -rf /var/cache/apk/*
 ENTRYPOINT ["/manager"]

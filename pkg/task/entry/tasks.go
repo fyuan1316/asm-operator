@@ -1,11 +1,11 @@
 package entry
 
 import (
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/task/migration"
 	migrationtasks "github.com/fyuan1316/asm-operator/pkg/task/migration/tasks"
 	"github.com/fyuan1316/asm-operator/pkg/task/provision"
 	provisiontasks "github.com/fyuan1316/asm-operator/pkg/task/provision/tasks"
+	"github.com/fyuan1316/operatorlib/manage/model"
 )
 
 func GetOperatorStages() ([][]model.ExecuteItem, [][]model.ExecuteItem) {
@@ -32,8 +32,9 @@ func SetUp() error {
 	// for deploy stages
 	// 1 migrations
 	migrationtasks.SetUpMigShell()
+
 	// 2 provisions
-	provisiontasks.SetUpCrds()
+	//provisiontasks.SetUpCrds()
 	provisiontasks.SetUpResource()
 	//-----------------
 	//for delete stages

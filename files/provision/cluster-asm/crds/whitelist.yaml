@@ -1,0 +1,93 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: whitelists.asm.alauda.io
+spec:
+  conversion:
+    strategy: None
+  group: asm.alauda.io
+  names:
+    kind: WhiteList
+    listKind: WhiteListList
+    plural: whitelists
+    singular: whitelist
+
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST chart this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                allowlist:
+                  items:
+                    properties:
+                      app:
+                        type: string
+                      version:
+                        type: string
+                    required:
+                      - app
+                    type: object
+                  type: array
+                destmatch:
+                  description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "make" to regenerate code after modifying this file'
+                  properties:
+                    namespace:
+                      type: string
+                    service:
+                      type: string
+                  required:
+                    - service
+                    - namespace
+                  type: object
+              required:
+                - destmatch
+                - allowlist
+              type: object
+            status:
+              type: object
+      served: true
+      storage: true
+status:
+  acceptedNames:
+    kind: WhiteList
+    listKind: WhiteListList
+    plural: whitelists
+    singular: whitelist
+  conditions:
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: 'spec.validation.openAPIV3Schema.type: Required value: must not be empty
+      at the root'
+      reason: Violations
+      status: "True"
+      type: NonStructuralSchema
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: no conflicts found
+      reason: NoConflicts
+      status: "True"
+      type: NamesAccepted
+    - lastTransitionTime: "2020-12-16T09:34:29Z"
+      message: the initial names have been accepted
+      reason: InitialNamesAccepted
+      status: "True"
+      type: Established
+  storedVersions:
+    - v1alpha1

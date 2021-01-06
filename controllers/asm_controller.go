@@ -20,14 +20,12 @@ import (
 	"context"
 	"fmt"
 	asmerrors "github.com/fyuan1316/asm-operator/pkg/errors"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage"
-	"github.com/fyuan1316/asm-operator/pkg/oprlib/manage/model"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
+	"github.com/fyuan1316/operatorlib/manage"
+	"github.com/fyuan1316/operatorlib/manage/model"
 	pkgerrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
@@ -42,15 +40,15 @@ import (
 // AsmReconciler reconciles a Asm object
 type AsmReconciler struct {
 	client.Client
-	DynamicClient dynamic.Interface
-	Config        *rest.Config
-	Log           logr.Logger
-	Scheme        *runtime.Scheme
-	Recorder      record.EventRecorder
+	//DynamicClient dynamic.Interface
+	//Config        *rest.Config
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 var once = sync.Once{}
-var mgr *model.OperatorManage
+var mgr *manage.OperatorManage
 var (
 	provisionTasks [][]model.ExecuteItem
 	deletionTasks  [][]model.ExecuteItem
@@ -80,10 +78,10 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	once.Do(func() {
 		mgr = manage.NewOperatorManage(
 			r.Client,
-			model.SetScheme(r.Scheme),
-			model.SetRecorder(r.Recorder),
-			model.SetFinalizer(finalizerID),
-			model.SetStatusUpdater(asmOperatorStatusUpdater))
+			manage.SetScheme(r.Scheme),
+			manage.SetRecorder(r.Recorder),
+			manage.SetFinalizer(finalizerID),
+			manage.SetStatusUpdater(asmOperatorStatusUpdater))
 
 		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})
