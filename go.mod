@@ -8,8 +8,8 @@ replace (
 )
 
 require (
-    github.com/fyuan1316/klient v0.0.0-20210106101119-962edf8f6e33 // indirect
 	github.com/coreos/prometheus-operator v0.41.0
+	github.com/fyuan1316/klient v0.0.0-20210106235436-d9ae9fa37eec // indirect
 	github.com/fyuan1316/operatorlib v0.0.0-20210106132823-879be4d125b8
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.2.1

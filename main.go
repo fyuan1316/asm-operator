@@ -18,11 +18,11 @@ package main
 
 import (
 	"flag"
-	"github.com/fyuan1316/asm-operator/api/dep/crd"
-	promv1 "github.com/fyuan1316/asm-operator/api/dep/monitoring/v1"
-	depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
-	depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
-	depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
+	//"github.com/fyuan1316/asm-operator/api/dep/crd"
+	//promv1 "github.com/fyuan1316/asm-operator/api/dep/monitoring/v1"
+	//depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
+	//depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
+	//depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
 	"go.uber.org/zap/zapcore"
 	"os"
@@ -47,11 +47,11 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(crd.AddToScheme(scheme))
-	utilruntime.Must(depv1beta1.AddToScheme(scheme))
-	utilruntime.Must(depv1beta2.AddToScheme(scheme))
-	utilruntime.Must(depv1alphba1.AddToScheme(scheme))
-	utilruntime.Must(promv1.AddToScheme(scheme))
+	//utilruntime.Must(crd.AddToScheme(scheme))
+	//utilruntime.Must(depv1beta1.AddToScheme(scheme))
+	//utilruntime.Must(depv1beta2.AddToScheme(scheme))
+	//utilruntime.Must(depv1alphba1.AddToScheme(scheme))
+	//utilruntime.Must(promv1.AddToScheme(scheme))
 
 	utilruntime.Must(operatorv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
