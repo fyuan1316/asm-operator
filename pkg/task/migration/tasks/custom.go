@@ -27,10 +27,6 @@ func (m CustomTask) Name() string {
 	return task.StageMigration
 }
 
-func (m CustomTask) LiveNess() bool {
-	panic("implement me")
-}
-
 /**
 自定义task实现
 */

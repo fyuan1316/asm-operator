@@ -27,12 +27,12 @@ func (p ProvisionResourcesTask) GetOperation() model.OperationType {
 }
 
 func (p ProvisionResourcesTask) Name() string {
-	return task.StageProvision
+	return task.StageProvision + "-task"
 }
 
 var ClusterAsmResDir = "files/provision/cluster-asm"
 
-func SetUpResource() {
+func SetUpProvision() {
 	ProvisionResources = ProvisionResourcesTask{
 		&chart.ChartTask{
 			Dir: ClusterAsmResDir,

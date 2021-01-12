@@ -15,7 +15,7 @@ type ShellTask struct {
 var ShellTasks ShellTask
 
 func (t ShellTask) Name() string {
-	return task.StageMigration
+	return task.StageMigration + "-task"
 }
 
 var MigrationShellDir = "files/migration/shell"

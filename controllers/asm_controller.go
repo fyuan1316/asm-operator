@@ -21,11 +21,12 @@ import (
 	"fmt"
 	asmerrors "github.com/fyuan1316/asm-operator/pkg/errors"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
+	"github.com/fyuan1316/operatorlib/api"
+	"github.com/fyuan1316/operatorlib/equality"
 	"github.com/fyuan1316/operatorlib/manage"
 	"github.com/fyuan1316/operatorlib/manage/model"
 	pkgerrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
@@ -81,7 +82,7 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			manage.SetScheme(r.Scheme),
 			manage.SetRecorder(r.Recorder),
 			manage.SetFinalizer(finalizerID),
-			manage.SetStatusUpdater(asmOperatorStatusUpdater))
+			manage.SetStatusUpdater(asmOperatorStatusUpdater2))
 
 		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})
@@ -95,42 +96,26 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return result, nil
 }
 
-var asmOperatorStatusUpdater = func(obj runtime.Object, client client.Client) func(isReady, isHealthy bool) error {
-	return func(isReady, isHealthy bool) error {
-		var asm *operatorv1alpha1.Asm
-		var ok bool
-		if asm, ok = obj.(*operatorv1alpha1.Asm); !ok {
-			return pkgerrors.New("asmOperatorStatusUpdate cast model.Object to operatorv1alpha1.Asm error")
-		}
-		asmCopy := asm.DeepCopy()
-		asmCopy.Status.SetState(isReady, isHealthy)
-		if asm.Status.State != asmCopy.Status.State {
-			if updErr := client.Status().Update(context.Background(), asmCopy); updErr != nil {
-				if errors.IsConflict(updErr) {
-					cur := &operatorv1alpha1.Asm{}
-					if err := client.Get(
-						context.Background(),
-						types.NamespacedName{
-							Namespace: asmCopy.GetNamespace(),
-							Name:      asmCopy.GetName(),
-						},
-						cur,
-					); err != nil {
-						return err
-					}
-					retryObj := cur.DeepCopy()
-					retryObj.Status.SetState(isReady, isHealthy)
-					if updErr2 := client.Status().Update(context.Background(), retryObj); updErr2 != nil {
-						return pkgerrors.Wrap(updErr2, "reUpdate AsmStatus error")
-					}
-					return nil
-				}
-				return pkgerrors.Wrap(updErr, "update AsmStatus error")
-			}
-		}
-		return nil
+var asmOperatorStatusUpdater2 = func(obj runtime.Object, status api.OperatorStatus, client client.Client) error {
+	var asm *operatorv1alpha1.Asm
+	var ok bool
+	if asm, ok = obj.(*operatorv1alpha1.Asm); !ok {
+		return pkgerrors.New("asmOperatorStatusUpdate cast model.Object to operatorv1alpha1.Asm error")
 	}
-
+	asmCopy := asm.DeepCopy()
+	if !equality.OperatorStatusSemantic.DeepDerivative(status, asmCopy.Status.GetOperatorStatus()) {
+		asmCopy.Status.State = status.State
+		if status.InstallConditions != nil {
+			asmCopy.Status.InstallConditions = status.InstallConditions
+		}
+		if status.DeleteConditions != nil {
+			asmCopy.Status.DeleteConditions = status.DeleteConditions
+		}
+		if errUpd := client.Status().Update(context.Background(), asmCopy); errUpd != nil {
+			return errUpd
+		}
+	}
+	return nil
 }
 
 func (r *AsmReconciler) SetupWithManager(mgr ctrl.Manager) error {

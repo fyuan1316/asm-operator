@@ -2,9 +2,7 @@ package entry
 
 import (
 	"github.com/fyuan1316/asm-operator/pkg/task/migration"
-	migrationtasks "github.com/fyuan1316/asm-operator/pkg/task/migration/tasks"
 	"github.com/fyuan1316/asm-operator/pkg/task/provision"
-	provisiontasks "github.com/fyuan1316/asm-operator/pkg/task/provision/tasks"
 	"github.com/fyuan1316/operatorlib/manage/model"
 )
 
@@ -24,20 +22,4 @@ func getDeployStages() [][]model.ExecuteItem {
 
 func getDeleteStages() [][]model.ExecuteItem {
 	return provision.GetDeleteStages()
-}
-
-// 初始化任务数据
-func SetUp() error {
-
-	// for deploy stages
-	// 1 migrations
-	migrationtasks.SetUpMigShell()
-
-	// 2 provisions
-	//provisiontasks.SetUpCrds()
-	provisiontasks.SetUpResource()
-	//-----------------
-	//for delete stages
-	provisiontasks.SetUpDeletion()
-	return nil
 }
