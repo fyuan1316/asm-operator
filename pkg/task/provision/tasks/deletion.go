@@ -18,7 +18,7 @@ func (p DeleteResourcesTask) GetOperation() model.OperationType {
 }
 
 func (p DeleteResourcesTask) Name() string {
-	return task.StageDeletion
+	return task.StageDeletion + "-task"
 }
 
 func SetUpDeletion() {
