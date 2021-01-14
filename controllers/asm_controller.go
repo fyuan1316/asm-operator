@@ -21,13 +21,14 @@ import (
 	"fmt"
 	asmerrors "github.com/fyuan1316/asm-operator/pkg/errors"
 	"github.com/fyuan1316/asm-operator/pkg/task/entry"
-	"github.com/fyuan1316/operatorlib/api"
 	"github.com/fyuan1316/operatorlib/equality"
+	"github.com/fyuan1316/operatorlib/event"
 	"github.com/fyuan1316/operatorlib/manage"
 	"github.com/fyuan1316/operatorlib/manage/model"
-	pkgerrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sync"
 
@@ -82,41 +83,93 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			manage.SetScheme(r.Scheme),
 			manage.SetRecorder(r.Recorder),
 			manage.SetFinalizer(finalizerID),
-			manage.SetStatusUpdater(asmOperatorStatusUpdater2))
+			manage.SetStatusUpdater(asmOperatorStatusUpdater3))
 
 		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})
 	result, err := mgr.Reconcile(instance, provisionTasks, deletionTasks)
 	if err != nil {
 		log.Error(err, "Reconcile err")
-		r.Recorder.Event(instance, asmerrors.WarningEvent, asmerrors.ReconcileError, err.Error())
+		r.Recorder.Event(instance, event.WarningEvent, asmerrors.ReconcileError, err.Error())
 		return result, err
 	}
 
 	return result, nil
 }
 
-var asmOperatorStatusUpdater2 = func(obj runtime.Object, status api.OperatorStatus, client client.Client) error {
-	var asm *operatorv1alpha1.Asm
-	var ok bool
-	if asm, ok = obj.(*operatorv1alpha1.Asm); !ok {
-		return pkgerrors.New("asmOperatorStatusUpdate cast model.Object to operatorv1alpha1.Asm error")
-	}
-	asmCopy := asm.DeepCopy()
-	if !equality.OperatorStatusSemantic.DeepDerivative(status, asmCopy.Status.GetOperatorStatus()) {
-		asmCopy.Status.State = status.State
-		if status.InstallConditions != nil {
-			asmCopy.Status.InstallConditions = status.InstallConditions
+var asmOperatorStatusUpdater3 = func(reqCtx *model.OperatorContext, statusCtx *model.StatusContext) error {
+	asm := &operatorv1alpha1.Asm{}
+	client := reqCtx.K8sClient
+	wantedStatus := statusCtx.GetOperatorStatus()
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		err := client.Get(context.Background(), types.NamespacedName{
+			Name:      reqCtx.Instance.GetName(),
+			Namespace: reqCtx.Instance.GetNamespace(),
+		}, asm)
+		if err != nil {
+			return err
 		}
-		if status.DeleteConditions != nil {
-			asmCopy.Status.DeleteConditions = status.DeleteConditions
+		current := asm.DeepCopy()
+		if !equality.OperatorStatusSemantic.DeepDerivative(wantedStatus, current.Status.GetOperatorStatus()) {
+			current.Status.State = wantedStatus.State
+			if wantedStatus.InstallConditions != nil {
+				current.Status.InstallConditions = wantedStatus.InstallConditions
+			}
+			if wantedStatus.DeleteConditions != nil {
+				current.Status.DeleteConditions = wantedStatus.DeleteConditions
+			}
+			if errUpd := client.Status().Update(context.Background(), current); errUpd != nil {
+				return errUpd
+			}
 		}
-		if errUpd := client.Status().Update(context.Background(), asmCopy); errUpd != nil {
-			return errUpd
-		}
-	}
-	return nil
+		return nil
+	})
 }
+
+/*
+var asmOperatorStatusUpdater = func(current runtime.Object,  client client.Client) error {
+	//var asm *operatorv1alpha1.Asm
+	//var ok bool
+	//if asm, ok = obj.(*operatorv1alpha1.Asm); !ok {
+	//	return pkgerrors.New("asmOperatorStatusUpdate cast model.Object to operatorv1alpha1.Asm error")
+	//}
+
+	c := types.NamespacedName{}
+	_ = client.Get(context.Background(), c, obj)
+
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		copy := obj.DeepCopyObject()
+		if !equality.OperatorStatusSemantic.DeepDerivative(status, copy.Status.GetOperatorStatus()) {
+			copy.Status.State = status.State
+			if status.InstallConditions != nil {
+				copy.Status.InstallConditions = status.InstallConditions
+			}
+			if status.DeleteConditions != nil {
+				copy.Status.DeleteConditions = status.DeleteConditions
+			}
+			if errUpd := client.Status().Update(context.Background(), copy); errUpd != nil {
+				return errUpd
+			}
+		}
+		return nil
+	})
+	//
+	//asmCopy := asm.DeepCopy()
+	//if !equality.OperatorStatusSemantic.DeepDerivative(status, asmCopy.Status.GetOperatorStatus()) {
+	//	asmCopy.Status.State = status.State
+	//	if status.InstallConditions != nil {
+	//		asmCopy.Status.InstallConditions = status.InstallConditions
+	//	}
+	//	if status.DeleteConditions != nil {
+	//		asmCopy.Status.DeleteConditions = status.DeleteConditions
+	//	}
+	//	if errUpd := client.Status().Update(context.Background(), asmCopy); errUpd != nil {
+	//		return errUpd
+	//	}
+	//}
+	//return nil
+}
+*/
 
 func (r *AsmReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
