@@ -8,19 +8,13 @@ replace (
 )
 
 require (
-	github.com/coreos/prometheus-operator v0.41.0
 	github.com/fyuan1316/klient v0.0.0-20210106235436-d9ae9fa37eec // indirect
 	github.com/fyuan1316/operatorlib v0.0.0-20210106132823-879be4d125b8
-	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.2.1
-	github.com/gogo/protobuf v1.3.1
-	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.2
-	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	go.uber.org/zap v1.16.0
-	k8s.io/api v0.19.4
 	k8s.io/apiextensions-apiserver v0.19.4
 	k8s.io/apimachinery v0.19.4
 	k8s.io/client-go v0.19.4
