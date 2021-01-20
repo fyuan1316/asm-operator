@@ -9,7 +9,7 @@ replace (
 
 require (
 	github.com/fyuan1316/klient v0.0.0-20210106235436-d9ae9fa37eec // indirect
-	github.com/fyuan1316/operatorlib v0.0.0-20210106132823-879be4d125b8
+	github.com/fyuan1316/operatorlib v0.0.0-20210120003144-ee29306dd173
 	github.com/go-logr/logr v0.2.1
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.2
