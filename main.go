@@ -23,9 +23,11 @@ import (
 	//depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
 	//depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
 	//depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
-	"github.com/fyuan1316/asm-operator/pkg/task/entry"
-	"go.uber.org/zap/zapcore"
 	"os"
+
+	"go.uber.org/zap/zapcore"
+
+	"github.com/fyuan1316/asm-operator/pkg/task/entry"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -67,13 +69,14 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true), zap.Level(zapcore.DebugLevel)))
-
+	//watchNamespace, err := k8sutil.GetWatchNamespace()
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "efff73cd.alauda.io",
+		Namespace:          "",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
