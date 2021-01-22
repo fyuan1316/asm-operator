@@ -4,8 +4,9 @@ metadata:
   name: asm-sample
 spec:
   # Add fields here
+  namespace: "cpaas-system"
   parameters: |-
     global:
       images:
         asm_controller:
-          tag: fy
+          tag: 6e11f33

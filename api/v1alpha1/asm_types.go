@@ -72,3 +72,15 @@ var _ model.CommonOperator = &Asm{}
 func (in Asm) GetOperatorParams() (map[string]interface{}, error) {
 	return in.Spec.OperatorSpec.GetOperatorParams()
 }
+
+func (in Asm) GetInstalledNamespace() string {
+	installToNs := in.Spec.OperatorSpec.GetInstalledNamespace()
+	if installToNs != "" {
+		return installToNs
+	}
+	return DefaultInstallToNameSpace
+}
+
+const (
+	DefaultInstallToNameSpace = "cpaas-system"
+)

@@ -26,7 +26,6 @@ import (
 	"github.com/fyuan1316/operatorlib/manage"
 	"github.com/fyuan1316/operatorlib/manage/model"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -99,13 +98,11 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 var asmOperatorStatusUpdater3 = func(reqCtx *model.OperatorContext, statusCtx *model.StatusContext) error {
 	asm := &operatorv1alpha1.Asm{}
-	client := reqCtx.K8sClient
+	k8sClient := reqCtx.K8sClient
 	wantedStatus := statusCtx.GetOperatorStatus()
 	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		err := client.Get(context.Background(), types.NamespacedName{
-			Name:      reqCtx.Instance.GetName(),
-			Namespace: reqCtx.Instance.GetNamespace(),
-		}, asm)
+		key, _ := client.ObjectKeyFromObject(reqCtx.Instance)
+		err := k8sClient.Get(context.Background(), key, asm)
 		if err != nil {
 			return err
 		}
@@ -118,7 +115,7 @@ var asmOperatorStatusUpdater3 = func(reqCtx *model.OperatorContext, statusCtx *m
 			if wantedStatus.DeleteConditions != nil {
 				current.Status.DeleteConditions = wantedStatus.DeleteConditions
 			}
-			if errUpd := client.Status().Update(context.Background(), current); errUpd != nil {
+			if errUpd := k8sClient.Status().Update(context.Background(), current); errUpd != nil {
 				return errUpd
 			}
 		}
