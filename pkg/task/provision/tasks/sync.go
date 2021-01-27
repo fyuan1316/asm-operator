@@ -28,9 +28,8 @@ var _ model.PreCheck = ProvisionResourcesTask{}
 var _ model.PreRun = ProvisionResourcesTask{}
 
 func (p ProvisionResourcesTask) PreRun(ctx *model.OperatorContext) error {
-	key := client.ObjectKey{Name: ctx.InstalledNamespace}
+	key := client.ObjectKey{Name: ctx.ChartRelease.Namespace}
 	current := corev1.Namespace{}
-	current.Name = ctx.InstalledNamespace
 	err := ctx.K8sClient.Get(context.TODO(), key, &current)
 	if err != nil {
 		if !apierrors.IsNotFound(err) {

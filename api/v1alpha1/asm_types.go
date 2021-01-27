@@ -18,8 +18,8 @@ package v1alpha1
 
 import (
 	"github.com/fyuan1316/operatorlib/api"
-	"github.com/fyuan1316/operatorlib/manage/model"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -30,7 +30,10 @@ type AsmSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	api.OperatorSpec `json:",inline"`
+	//api.OperatorSpec `json:",inline"`
+	Cluster    string                          `json:"cluster"`
+	Namespace  string                          `json:"namespace,omitempty"`
+	Parameters map[string]runtime.RawExtension `json:"parameters,omitempty"`
 }
 
 // AsmStatus defines the observed state of Asm
@@ -66,21 +69,3 @@ type AsmList struct {
 func init() {
 	SchemeBuilder.Register(&Asm{}, &AsmList{})
 }
-
-var _ model.CommonOperator = &Asm{}
-
-func (in Asm) GetOperatorParams() (map[string]interface{}, error) {
-	return in.Spec.OperatorSpec.GetOperatorParams()
-}
-
-func (in Asm) GetInstalledNamespace() string {
-	installToNs := in.Spec.OperatorSpec.GetInstalledNamespace()
-	if installToNs != "" {
-		return installToNs
-	}
-	return DefaultInstallToNameSpace
-}
-
-const (
-	DefaultInstallToNameSpace = "cpaas-system"
-)

@@ -40,8 +40,6 @@ import (
 // AsmReconciler reconciles a Asm object
 type AsmReconciler struct {
 	client.Client
-	//DynamicClient dynamic.Interface
-	//Config        *rest.Config
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
@@ -81,7 +79,11 @@ func (r *AsmReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			manage.SetScheme(r.Scheme),
 			manage.SetRecorder(r.Recorder),
 			manage.SetFinalizer(finalizerID),
-			manage.SetStatusUpdater(asmOperatorStatusUpdater3))
+			manage.SetStatusUpdater(asmOperatorStatusUpdater3),
+			//兼容chart安装信息
+			manage.SetChartName("cluster-asm"),
+			//chart资源默认安装的namespace
+			manage.SetDefaultInstallNamespace("cpaas-system"))
 
 		provisionTasks, deletionTasks = entry.GetOperatorStages()
 	})

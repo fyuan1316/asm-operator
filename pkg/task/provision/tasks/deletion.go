@@ -20,7 +20,6 @@ func (p DeleteResourcesTask) GetOperation() model.OperationType {
 	return model.Operations.Deletion
 }
 
-
 func SetUpDeletion() {
 	DeleteResources = DeleteResourcesTask{
 		&chart.ChartTask{

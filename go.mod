@@ -4,12 +4,12 @@ go 1.13
 
 replace (
 	github.com/fyuan1316/klient v0.0.0-20210106101119-962edf8f6e33 => ./local/klient // indirect
-	github.com/fyuan1316/operatorlib v0.0.0-20210127072735-8a69c1444db1 => ./local/operatorlib
+	//github.com/fyuan1316/operatorlib v0.0.0-20210127105047-5c3456252ba9 => ./local/operatorlib
 )
 
 require (
 	github.com/fyuan1316/klient v0.0.0-20210106235436-d9ae9fa37eec // indirect
-	github.com/fyuan1316/operatorlib v0.0.0-20210127072735-8a69c1444db1
+	github.com/fyuan1316/operatorlib v0.0.0-20210127105047-5c3456252ba9
 	github.com/go-logr/logr v0.2.1
 	github.com/onsi/ginkgo v1.13.0
 	github.com/onsi/gomega v1.10.2

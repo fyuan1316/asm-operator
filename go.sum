@@ -219,6 +219,8 @@ github.com/fyuan1316/operatorlib v0.0.0-20210122074635-73a6ba973b1b h1:4jwxifAYY
 github.com/fyuan1316/operatorlib v0.0.0-20210122074635-73a6ba973b1b/go.mod h1:mvWS1/3I//X4BnlKCOOqzpyafCBJSFkBZhwLHUkUKSA=
 github.com/fyuan1316/operatorlib v0.0.0-20210127072735-8a69c1444db1 h1:SJEfDq+5yyZcSo6/LeaDf+xZ2cgHmWh8ostyk4IuJ4k=
 github.com/fyuan1316/operatorlib v0.0.0-20210127072735-8a69c1444db1/go.mod h1:mvWS1/3I//X4BnlKCOOqzpyafCBJSFkBZhwLHUkUKSA=
+github.com/fyuan1316/operatorlib v0.0.0-20210127105047-5c3456252ba9 h1:dMG4G3GtqoZfmzSzaT9fE3qCgnkH6IeN9737o8+Y6wA=
+github.com/fyuan1316/operatorlib v0.0.0-20210127105047-5c3456252ba9/go.mod h1:mvWS1/3I//X4BnlKCOOqzpyafCBJSFkBZhwLHUkUKSA=
 github.com/garyburd/redigo v0.0.0-20150301180006-535138d7bcd7/go.mod h1:NR3MbYisc3/PwhQ00EMzDiPmrwpPxAn5GI05/YaO1SY=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=

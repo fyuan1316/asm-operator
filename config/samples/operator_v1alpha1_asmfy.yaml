@@ -3,9 +3,9 @@ kind: Asm
 metadata:
   name: asm-sample
 spec:
-  # Add fields here
+  cluster: "ovn"
   namespace: "cpaas-system"
-  parameters: |-
+  parameters:
     global:
       images:
         asm_controller:
