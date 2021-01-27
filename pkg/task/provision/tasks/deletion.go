@@ -20,9 +20,6 @@ func (p DeleteResourcesTask) GetOperation() model.OperationType {
 	return model.Operations.Deletion
 }
 
-//func (p DeleteResourcesTask) Name() string {
-//	return task.StageDeletion + "-task"
-//}
 
 func SetUpDeletion() {
 	DeleteResources = DeleteResourcesTask{

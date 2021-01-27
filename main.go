@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"github.com/fyuan1316/asm-operator/api/dep/crd"
+
 	//"github.com/fyuan1316/asm-operator/api/dep/crd"
 	//promv1 "github.com/fyuan1316/asm-operator/api/dep/monitoring/v1"
 	//depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
@@ -49,7 +51,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	//utilruntime.Must(crd.AddToScheme(scheme))
+	utilruntime.Must(crd.AddToScheme(scheme))
 	//utilruntime.Must(depv1beta1.AddToScheme(scheme))
 	//utilruntime.Must(depv1beta2.AddToScheme(scheme))
 	//utilruntime.Must(depv1alphba1.AddToScheme(scheme))
