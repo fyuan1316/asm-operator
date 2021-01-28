@@ -1,7 +1,7 @@
 domain: alauda.io
 layout: go.kubebuilder.io/v2
 projectName: asm-operator
-repo: github.com/fyuan1316/asm-operator
+repo: gitlab-ce.alauda.cn/micro-service/asm-operator
 resources:
 - group: operator
   kind: Asm

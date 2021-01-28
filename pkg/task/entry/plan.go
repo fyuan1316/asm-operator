@@ -1,9 +1,9 @@
 package entry
 
 import (
-	"github.com/fyuan1316/asm-operator/pkg/task/migration"
-	"github.com/fyuan1316/asm-operator/pkg/task/provision"
 	"github.com/fyuan1316/operatorlib/manage/model"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/task/migration"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/task/provision"
 )
 
 func GetOperatorStages() ([][]model.ExecuteItem, [][]model.ExecuteItem) {

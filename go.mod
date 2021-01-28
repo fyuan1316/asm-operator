@@ -1,9 +1,9 @@
-module github.com/fyuan1316/asm-operator
+module gitlab-ce.alauda.cn/micro-service/asm-operator
 
 go 1.13
 
 replace (
-	github.com/fyuan1316/klient v0.0.0-20210106101119-962edf8f6e33 => ./local/klient // indirect
+	//github.com/fyuan1316/klient v0.0.0-20210106101119-962edf8f6e33 => ./local/klient // indirect
 	//github.com/fyuan1316/operatorlib v0.0.0-20210127105047-5c3456252ba9 => ./local/operatorlib
 )
 

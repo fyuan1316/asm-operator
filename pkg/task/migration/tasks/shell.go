@@ -1,9 +1,9 @@
 package tasks
 
 import (
-	"github.com/fyuan1316/asm-operator/pkg/task"
 	"github.com/fyuan1316/operatorlib/manage/model"
 	"github.com/fyuan1316/operatorlib/task/shell"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/task"
 )
 
 var _ model.ExecuteItem = ShellTask{}

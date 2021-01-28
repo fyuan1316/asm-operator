@@ -18,18 +18,18 @@ package main
 
 import (
 	"flag"
-	"github.com/fyuan1316/asm-operator/api/dep/crd"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/crd"
 
-	//"github.com/fyuan1316/asm-operator/api/dep/crd"
-	//promv1 "github.com/fyuan1316/asm-operator/api/dep/monitoring/v1"
-	//depv1alphba1 "github.com/fyuan1316/asm-operator/api/dep/v1alpha1"
-	//depv1beta1 "github.com/fyuan1316/asm-operator/api/dep/v1beta1"
-	//depv1beta2 "github.com/fyuan1316/asm-operator/api/dep/v1beta2"
+	//"gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/crd"
+	//promv1 "gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/monitoring/v1"
+	//depv1alphba1 "gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/v1alpha1"
+	//depv1beta1 "gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/v1beta1"
+	//depv1beta2 "gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/v1beta2"
 	"os"
 
 	"go.uber.org/zap/zapcore"
 
-	"github.com/fyuan1316/asm-operator/pkg/task/entry"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/task/entry"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -38,8 +38,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	operatorv1alpha1 "github.com/fyuan1316/asm-operator/api/v1alpha1"
-	"github.com/fyuan1316/asm-operator/controllers"
+	operatorv1alpha1 "gitlab-ce.alauda.cn/micro-service/asm-operator/api/v1alpha1"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/controllers"
 	// +kubebuilder:scaffold:imports
 )
 

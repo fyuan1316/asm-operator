@@ -1,8 +1,8 @@
 package entry
 
 import (
-	migrationtasks "github.com/fyuan1316/asm-operator/pkg/task/migration/tasks"
-	provisiontasks "github.com/fyuan1316/asm-operator/pkg/task/provision/tasks"
+	migrationtasks "gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/task/migration/tasks"
+	provisiontasks "gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/task/provision/tasks"
 )
 
 // 初始化任务数据
