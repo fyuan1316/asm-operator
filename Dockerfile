@@ -14,7 +14,6 @@ COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
 COPY pkg/ pkg/
-COPY local/ local/
 
 RUN go mod download
 
