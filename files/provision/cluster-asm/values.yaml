@@ -62,27 +62,50 @@ grafana:
   basepath: /grafana-asm
   tls: null
   externalPort: 3000
-  nodePort: 30667
+#  nodePort: 30667
 prometheus:
   url: ""
   serviceMonitorLabels:
     prometheus: kube-prometheus
 jaeger:
   url: https://asm.dev.com/jaeger-asm-cluster1
+  strategy: production
   query:
     basepath: /jaeger-asm
     replicas: 1
   collector:
     replicas: 1
+  ingester:
+    replicas: 3
+    options:
+      ingester:
+        deadlockInterval: 0
+    resources:
+      limits:
+        cpu: 100m
+        memory: 2Gi
+      requests:
+        cpu: 100m
+        memory: 2Gi
   elasticsearch:
     indexprefix: asm
     serverurl: http://es-elasticsearch-client.istio-system:9200
     username: elastic
     password: changeme
     indexRetainsDays: 3
+    tls:
+      enabled: true
+      skip_host_verify: true
+    kafka:
+      authentication: plaintext
+      brokers: http://kafka-brokers-server:9092
+      plaintext:
+        password: changeme
+        username: kafka
+      topic: jaeger-spans
   ui:
     port: 16686
-    nodePort: 30668
+#    nodePort: 30668
   nsZipkinCollector:
     host: ns-zipkin
     port: 9411
