@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/crd"
+	"gitlab-ce.alauda.cn/micro-service/asm-operator/pkg/env"
+	"time"
 
 	//"gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/crd"
 	//promv1 "gitlab-ce.alauda.cn/micro-service/asm-operator/api/dep/monitoring/v1"
@@ -63,36 +65,31 @@ func init() {
 
 func main() {
 	var metricsAddr string
-	var enableLeaderElection bool
+	var interval int
+
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+	flag.IntVar(&interval, "interval", 30, "Timer interval is used to synchronize business cluster resources")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true), zap.Level(zapcore.DebugLevel)))
-	//watchNamespace, err := k8sutil.GetWatchNamespace()
+	leaderElectionNS, leaderElectionEnabled := env.GetLeaderElectionNamespace()
+	d := time.Second * time.Duration(interval)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		Port:               9443,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "efff73cd.alauda.io",
-		Namespace:          "",
+		Scheme:                  scheme,
+		MetricsBindAddress:      metricsAddr,
+		Port:                    9443,
+		LeaderElection:          leaderElectionEnabled,
+		LeaderElectionNamespace: leaderElectionNS,
+		LeaderElectionID:        "asm-operator-lock",
+		Namespace:               "",
+		SyncPeriod:              &d,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
-	//dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
-	//if err != nil {
-	//	panic(err)
-	//}
-
 	if err = (&controllers.AsmReconciler{
-		Client: mgr.GetClient(),
-		//DynamicClient: dynamicClient,
-		//Config:        mgr.GetConfig(),
+		Client:   mgr.GetClient(),
 		Log:      ctrl.Log.WithName("asm-operator").WithName("Asm"),
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorderFor("asm-operator"),
